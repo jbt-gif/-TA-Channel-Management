@@ -1,0 +1,321 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  HOTEL_ADMIN
+  FRONT_DESK
+  HOUSEKEEPING
+}
+
+enum HousekeepingStatus {
+  CLEAN
+  DIRTY
+  INSPECTING
+  OUT_OF_SERVICE
+}
+
+enum BookingStatus {
+  PENDING_PAYMENT
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}
+
+enum BookingSource {
+  WALK_IN
+  OTA
+  DIRECT
+}
+
+enum PaymentMethod {
+  GCASH
+  QR_PH
+  CARD
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum ChannelMappingType {
+  ROOM_TYPE
+  RATE_PLAN
+}
+
+model Hotel {
+  id        String    @id @default(cuid())
+  name      String
+  timezone  String    @default("Asia/Manila")
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  users              User[]
+  roomTypes          RoomType[]
+  ratePlans          RatePlan[]
+  rooms              Room[]
+  dailyInventories   DailyInventory[]
+  ratePlanDailyRates RatePlanDailyRate[]
+  guests             Guest[]
+  bookings           Booking[]
+  bookingItems       BookingItem[]
+  payments           Payment[]
+  channelMappings    ChannelMapping[]
+}
+
+model User {
+  id           String    @id @default(cuid())
+  hotelId      String
+  hotel        Hotel     @relation(fields: [hotelId], references: [id], onDelete: Restrict)
+  email        String    @unique
+  passwordHash String
+  role         Role
+  deletedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  createdBookings   Booking[]
+  processedPayments Payment[]
+
+  @@index([hotelId])
+}
+
+model RoomType {
+  id           String    @id @default(cuid())
+  hotelId      String
+  hotel        Hotel     @relation(fields: [hotelId], references: [id], onDelete: Restrict)
+  name         String
+  baseCapacity Int
+  deletedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  ratePlans        RatePlan[]
+  rooms            Room[]
+  dailyInventories DailyInventory[]
+  bookingItems     BookingItem[]
+  channelMappings  ChannelMapping[]
+
+  @@unique([hotelId, name])
+  @@index([hotelId])
+}
+
+model RatePlan {
+  id                String    @id @default(cuid())
+  roomTypeId        String
+  roomType          RoomType  @relation(fields: [roomTypeId], references: [id], onDelete: Restrict)
+  hotelId           String
+  hotel             Hotel     @relation(fields: [hotelId], references: [id], onDelete: Restrict)
+  name              String
+  isRefundable      Boolean
+  includesBreakfast Boolean
+  /// PHP only — no currency column, project is PH-only per PROJECT.md scope
+  basePrice         Decimal   @db.Decimal(10, 2)
+  deletedAt         DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  dailyRates      RatePlanDailyRate[]
+  bookingItems    BookingItem[]
+  channelMappings ChannelMapping[]
+
+  @@index([hotelId])
+  @@index([roomTypeId])
+}
+
+model DailyInventory {
+  id             String   @id @default(cuid())
+  hotelId        String
+  hotel          Hotel    @relation(fields: [hotelId], references: [id], onDelete: Restrict)
+  roomTypeId     String
+  roomType       RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Restrict)
+  date           DateTime @db.Date
+  availableCount Int
+  bookedCount    Int      @default(0)
+  heldCount      Int      @default(0)
+  isClosed       Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([roomTypeId, date])
+  @@index([hotelId])
+}
+
+model RatePlanDailyRate {
+  id         String   @id @default(cuid())
+  hotelId    String
+  hotel      Hotel    @relation(fields: [hotelId], references: [id], onDelete: Restrict)
+  ratePlanId String
+  ratePlan   RatePlan @relation(fields: [ratePlanId], references: [id], onDelete: Restrict)
+  date       DateTime @db.Date
+  /// PHP only — no currency column, project is PH-only per PROJECT.md scope
+  price      Decimal  @db.Decimal(10, 2)
+  minStay    Int      @default(1)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([ratePlanId, date])
+  @@index([hotelId])
+}
+
+model Room {
+  id                 String             @id @default(cuid())
+  hotelId            String
+  hotel              Hotel              @relation(fields: [hotelId], references: [id], onDelete: Restrict)
+  roomTypeId         String
+  roomType           RoomType           @relation(fields: [roomTypeId], references: [id], onDelete: Restrict)
+  label              String
+  housekeepingStatus HousekeepingStatus @default(CLEAN)
+  deletedAt          DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  @@unique([hotelId, label])
+  @@index([hotelId])
+  @@index([roomTypeId])
+}
+
+model Guest {
+  id        String    @id @default(cuid())
+  hotelId   String
+  hotel     Hotel     @relation(fields: [hotelId], references: [id], onDelete: Restrict)
+  firstName String
+  lastName  String
+  email     String?
+  phone     String?
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  bookings Booking[]
+
+  @@index([hotelId])
+  @@index([hotelId, email])
+}
+
+/// Bookings are financial/audit records — deliberately NO deletedAt.
+/// "Cancelled" is a status (BookingStatus.CANCELLED), not a deletion; soft-deleting
+/// would hide a booking from queries that need full history (payment reconciliation,
+/// dispute resolution).
+model Booking {
+  id                String        @id @default(cuid())
+  hotelId           String
+  hotel             Hotel         @relation(fields: [hotelId], references: [id], onDelete: Restrict)
+  guestId           String
+  guest             Guest         @relation(fields: [guestId], references: [id], onDelete: Restrict)
+  status            BookingStatus @default(PENDING_PAYMENT)
+  source            BookingSource @default(WALK_IN)
+  /// Populated by Phase 4's Channex webhook handler for idempotency/dedupe on retry.
+  externalBookingId String?
+  /// Populated by Phase 2's booking-creation transaction once it computes the real
+  /// total from BookingItems — nullable until then so Payment has an authoritative
+  /// figure to reconcile against without retrofitting this field after real data exists.
+  totalAmount       Decimal?      @db.Decimal(10, 2)
+  /// Nullable — null for Phase 4 OTA-originated bookings. Records which staff member
+  /// took a walk-in booking, for dispute resolution/audit reconstruction.
+  createdByUserId   String?
+  createdByUser     User?         @relation(fields: [createdByUserId], references: [id], onDelete: Restrict)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  bookingItems BookingItem[]
+  payments     Payment[]
+
+  @@unique([hotelId, externalBookingId])
+  @@index([hotelId])
+  @@index([guestId])
+}
+
+model BookingItem {
+  id           String   @id @default(cuid())
+  hotelId      String
+  hotel        Hotel    @relation(fields: [hotelId], references: [id], onDelete: Restrict)
+  bookingId    String
+  booking      Booking  @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  roomTypeId   String
+  roomType     RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Restrict)
+  ratePlanId   String
+  ratePlan     RatePlan @relation(fields: [ratePlanId], references: [id], onDelete: Restrict)
+  checkInDate  DateTime @db.Date
+  checkOutDate DateTime @db.Date
+  /// Number of rooms of this RoomType/RatePlan booked for this date range.
+  quantity     Int
+  /// PHP only — no currency column, project is PH-only per PROJECT.md scope.
+  /// The pre-computed TOTAL charge for this line item's full stay — computed by
+  /// Phase 2 by walking the actual per-night RatePlanDailyRate values for each date
+  /// in range, NOT a flat per-night rate multiplied by nights. RatePlanDailyRate is
+  /// keyed per-date because nightly rates can vary (e.g. weekday vs weekend), so a
+  /// flat per-night figure would silently misstate the total whenever rates vary
+  /// across the stay.
+  totalPriceSnapshot Decimal @db.Decimal(10, 2)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([hotelId])
+  @@index([bookingId])
+  @@index([roomTypeId, checkInDate, checkOutDate])
+}
+
+/// No deletedAt — same reasoning as Booking, a payment record must never
+/// disappear from history.
+model Payment {
+  id        String        @id @default(cuid())
+  hotelId   String
+  hotel     Hotel         @relation(fields: [hotelId], references: [id], onDelete: Restrict)
+  bookingId String
+  booking   Booking       @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  method    PaymentMethod
+  status    PaymentStatus @default(PENDING)
+  /// PHP only — no currency column, project is PH-only per PROJECT.md scope
+  amount    Decimal       @db.Decimal(10, 2)
+  /// Populated by Phase 5's Xendit integration with the Xendit invoice/payment id.
+  externalReference String?
+  /// Nullable — null for Phase 5 webhook-driven payments. Records which staff
+  /// member processed a manually-taken payment, for dispute resolution/audit
+  /// reconstruction.
+  processedByUserId String?
+  processedByUser   User?   @relation(fields: [processedByUserId], references: [id], onDelete: Restrict)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([hotelId])
+  @@index([bookingId])
+}
+
+model ChannelMapping {
+  id         String             @id @default(cuid())
+  hotelId    String
+  hotel      Hotel              @relation(fields: [hotelId], references: [id], onDelete: Restrict)
+  mappingType ChannelMappingType
+  /// Exactly one of roomTypeId/ratePlanId should be set, matching mappingType.
+  /// No application-level validation for that yet — no UI/API exists to validate
+  /// against; Phase 4 must enforce it when the admin UI/webhook handler is built.
+  roomTypeId String?
+  roomType   RoomType?          @relation(fields: [roomTypeId], references: [id], onDelete: Restrict)
+  ratePlanId String?
+  ratePlan   RatePlan?          @relation(fields: [ratePlanId], references: [id], onDelete: Restrict)
+  /// The Channex-side room_type_id or rate_plan_id — exact field shape confirmed
+  /// during Phase 4's research step per ROADMAP.md; this is a placeholder string
+  /// sufficient to unblock that phase, not a finalized Channex payload shape.
+  externalId String
+  deletedAt  DateTime?
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+
+  @@unique([hotelId, mappingType, externalId])
+  @@index([hotelId])
+  @@index([roomTypeId])
+  @@index([ratePlanId])
+}

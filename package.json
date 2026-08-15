@@ -1,0 +1,25 @@
+{
+  "name": "ph-channel-manager-backend",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "smoke-test": "tsx src/scripts/smoke-test.ts",
+    "smoke-test-inventory": "tsx src/scripts/smoke-test-inventory.ts",
+    "smoke-test-booking": "tsx src/scripts/smoke-test-booking.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.1.0",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.2",
+    "prisma": "^6.1.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
