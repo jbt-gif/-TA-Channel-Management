@@ -1,0 +1,242 @@
+{
+  "package.json": {
+    "mtime": 1786857257.9620838,
+    "seen": 1786857437.452568,
+    "ast_hash": "78f218b3d9e0176c02c86ab8f61798f7",
+    "semantic_hash": ""
+  },
+  "src/app.ts": {
+    "mtime": 1786857229.4069293,
+    "seen": 1786857437.452582,
+    "ast_hash": "07fc3a1d131ebe4f9dd4a84af21cb1be",
+    "semantic_hash": ""
+  },
+  "src/lib/auth.ts": {
+    "mtime": 1786856981.87122,
+    "seen": 1786857437.4525833,
+    "ast_hash": "83e2002426c4172db6d02370a82cec31",
+    "semantic_hash": ""
+  },
+  "src/lib/prisma.ts": {
+    "mtime": 1786782234.9738388,
+    "seen": 1786857437.452585,
+    "ast_hash": "4349549a81d38845dc15cd0bc9a4533d",
+    "semantic_hash": ""
+  },
+  "src/lib/seed-inventory.ts": {
+    "mtime": 1786784131.6253514,
+    "seen": 1786857437.4525864,
+    "ast_hash": "18822fc3b8596d7546ec55249e61a8b0",
+    "semantic_hash": ""
+  },
+  "src/middleware/auth.ts": {
+    "mtime": 1786856986.6586556,
+    "seen": 1786857437.4525878,
+    "ast_hash": "1553e2b73f3274375e3fd30b3c33115d",
+    "semantic_hash": ""
+  },
+  "src/routes/auth.ts": {
+    "mtime": 1786856994.3095078,
+    "seen": 1786857437.4525893,
+    "ast_hash": "6b23a2c9e8a4f756909eafc7d0d715e9",
+    "semantic_hash": ""
+  },
+  "src/scripts/clear-smoke-test-data.ts": {
+    "mtime": 1786784006.2247274,
+    "seen": 1786857437.4525907,
+    "ast_hash": "a60a9a620c690421e12ac4e3025166ec",
+    "semantic_hash": ""
+  },
+  "src/scripts/create-user.ts": {
+    "mtime": 1786856845.7533097,
+    "seen": 1786857437.452592,
+    "ast_hash": "ff9c27aae7a19df2175be5b33d3ae970",
+    "semantic_hash": ""
+  },
+  "src/scripts/smoke-test-auth.ts": {
+    "mtime": 1786857250.107874,
+    "seen": 1786857437.452593,
+    "ast_hash": "0a781787cb17bcee94f0df847e2d718c",
+    "semantic_hash": ""
+  },
+  "src/scripts/smoke-test-booking.ts": {
+    "mtime": 1786785389.8296087,
+    "seen": 1786857437.4525945,
+    "ast_hash": "61c383bf16f7126415a8c71fb0a28949",
+    "semantic_hash": ""
+  },
+  "src/scripts/smoke-test-inventory.ts": {
+    "mtime": 1786784154.8173075,
+    "seen": 1786857437.4525955,
+    "ast_hash": "fed7de5f1a0b461c2b30baca2e56a94c",
+    "semantic_hash": ""
+  },
+  "src/scripts/smoke-test.ts": {
+    "mtime": 1786784181.399296,
+    "seen": 1786857437.452597,
+    "ast_hash": "6df46b565ed028c82d8d91d9369b25b0",
+    "semantic_hash": ""
+  },
+  "src/scripts/verify-check-constraint.ts": {
+    "mtime": 1786784102.2977128,
+    "seen": 1786857437.4525983,
+    "ast_hash": "f5e140dd05c6d549537c4d0c00dd6981",
+    "semantic_hash": ""
+  },
+  "src/server.ts": {
+    "mtime": 1786857232.8077233,
+    "seen": 1786857437.4525995,
+    "ast_hash": "7eeb1f69724ebbda96111fc3868bc7bc",
+    "semantic_hash": ""
+  },
+  "tsconfig.json": {
+    "mtime": 1786782218.1922805,
+    "seen": 1786857437.4526012,
+    "ast_hash": "e996e545df16d45eb07024e7d73f1b2a",
+    "semantic_hash": ""
+  },
+  ".paul/HANDOFF-2026-08-15-phase1-foundation.md": {
+    "mtime": 1786784451.0420966,
+    "seen": 1786857437.4526021,
+    "ast_hash": "34a88b144ee03e764fd6d4d89b50bfee",
+    "semantic_hash": ""
+  },
+  ".paul/PROJECT.md": {
+    "mtime": 1786787048.4842906,
+    "seen": 1786857437.4526033,
+    "ast_hash": "202fdfb2349c7330079f2f79ca27deb8",
+    "semantic_hash": ""
+  },
+  ".paul/ROADMAP.md": {
+    "mtime": 1786786883.8592641,
+    "seen": 1786857437.4526048,
+    "ast_hash": "73d2dc89a675bf70e81e5bd6dadcb464",
+    "semantic_hash": ""
+  },
+  ".paul/SPECIAL-FLOWS.md": {
+    "mtime": 1786776063.5414183,
+    "seen": 1786857437.452606,
+    "ast_hash": "624386b33a9db99e27a936b4702faeb6",
+    "semantic_hash": ""
+  },
+  ".paul/STATE.md": {
+    "mtime": 1786787040.1042764,
+    "seen": 1786857437.4526074,
+    "ast_hash": "f6986f965c0c215ba7405ba90363a33c",
+    "semantic_hash": ""
+  },
+  ".paul/config.md": {
+    "mtime": 1786776052.4201417,
+    "seen": 1786857437.4526086,
+    "ast_hash": "ecde59a1b3788d49995b1a3a24cf9a19",
+    "semantic_hash": ""
+  },
+  ".paul/phases/01-data-model-foundation/01-01-AUDIT.md": {
+    "mtime": 1786782131.8597584,
+    "seen": 1786857437.4526098,
+    "ast_hash": "142ced4763404ebced4e4368efb37e1a",
+    "semantic_hash": ""
+  },
+  ".paul/phases/01-data-model-foundation/01-01-PLAN.md": {
+    "mtime": 1786782090.8223424,
+    "seen": 1786857437.452611,
+    "ast_hash": "b630415aeefd60ce611b4ed4b2e59790",
+    "semantic_hash": ""
+  },
+  ".paul/phases/01-data-model-foundation/01-01-SUMMARY.md": {
+    "mtime": 1786782988.1262834,
+    "seen": 1786857437.4526122,
+    "ast_hash": "7b2d36ab9a0fdd51c0be5ce936763fda",
+    "semantic_hash": ""
+  },
+  ".paul/phases/01-data-model-foundation/01-02-AUDIT.md": {
+    "mtime": 1786783883.920688,
+    "seen": 1786857437.4526134,
+    "ast_hash": "1eeaebefe950b6d5d3366b7b5f7de749",
+    "semantic_hash": ""
+  },
+  ".paul/phases/01-data-model-foundation/01-02-PLAN.md": {
+    "mtime": 1786783850.0963414,
+    "seen": 1786857437.4526143,
+    "ast_hash": "707cf67db72f51ebd453a967dd4e26ad",
+    "semantic_hash": ""
+  },
+  ".paul/phases/01-data-model-foundation/01-02-SUMMARY.md": {
+    "mtime": 1786784778.595568,
+    "seen": 1786857437.4526157,
+    "ast_hash": "ad98f5575c499f697365bba798714f6c",
+    "semantic_hash": ""
+  },
+  ".paul/phases/01-data-model-foundation/01-03-AUDIT.md": {
+    "mtime": 1786785132.0459468,
+    "seen": 1786857437.4526167,
+    "ast_hash": "f5eb1a2725a53636ba7c0a729493bcd4",
+    "semantic_hash": ""
+  },
+  ".paul/phases/01-data-model-foundation/01-03-PLAN.md": {
+    "mtime": 1786785100.745299,
+    "seen": 1786857437.452618,
+    "ast_hash": "70d005f695cfb286601292b850736bb0",
+    "semantic_hash": ""
+  },
+  ".paul/phases/01-data-model-foundation/01-03-SUMMARY.md": {
+    "mtime": 1786785513.3970962,
+    "seen": 1786857437.452619,
+    "ast_hash": "411e34dcfb745d185b7b0ab7b7a07697",
+    "semantic_hash": ""
+  },
+  ".paul/phases/02-front-desk-booking-core/02-01-AUDIT.md": {
+    "mtime": 1786787025.980692,
+    "seen": 1786857437.4526203,
+    "ast_hash": "0451dd0daae36fc22bb2ceb32cad9451",
+    "semantic_hash": ""
+  },
+  ".paul/phases/02-front-desk-booking-core/02-01-PLAN.md": {
+    "mtime": 1786786996.5351355,
+    "seen": 1786857437.4526215,
+    "ast_hash": "c213655c53362bf6c0f98b9a0b294da3",
+    "semantic_hash": ""
+  },
+  "ARCHITECTURE.md": {
+    "mtime": 1786787264.3566675,
+    "seen": 1786857437.4526227,
+    "ast_hash": "5a8f289986078d36141f6110934b97a1",
+    "semantic_hash": ""
+  },
+  "prisma/migrations/20260815083409_init_core_schema/migration.sql": {
+    "mtime": 1786782849.1871214,
+    "seen": 1786857437.4525728,
+    "ast_hash": "f9ad7a88fad26ddffa0ed2d7c99dee00",
+    "semantic_hash": ""
+  },
+  "prisma/migrations/20260815085356_add_daily_inventory_and_rate_plan_rates/migration.sql": {
+    "mtime": 1786784036.0115852,
+    "seen": 1786857437.4525752,
+    "ast_hash": "b273713d77a7787cc6001e31dd2e37e5",
+    "semantic_hash": ""
+  },
+  "prisma/migrations/20260815085414_add_inventory_check_constraints/migration.sql": {
+    "mtime": 1786784066.3257105,
+    "seen": 1786857437.4525769,
+    "ast_hash": "dd6393a53572642e19f0e128b6030710",
+    "semantic_hash": ""
+  },
+  "prisma/migrations/20260815091329_add_booking_core_models/migration.sql": {
+    "mtime": 1786785209.3309767,
+    "seen": 1786857437.4525783,
+    "ast_hash": "b8460118322c90a22b433822c2b92130",
+    "semantic_hash": ""
+  },
+  "prisma/migrations/20260815091415_add_payment_channel_mapping/migration.sql": {
+    "mtime": 1786785255.7545402,
+    "seen": 1786857437.4525793,
+    "ast_hash": "c35bf3205e38e5da9a8677ddcbf75d7c",
+    "semantic_hash": ""
+  },
+  "prisma/migrations/20260815091432_add_booking_check_constraints/migration.sql": {
+    "mtime": 1786785283.6912792,
+    "seen": 1786857437.4525805,
+    "ast_hash": "2f1f5b6500ece2f3fe7f1cdbd728187a",
+    "semantic_hash": ""
+  }
+}

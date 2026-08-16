@@ -2,3 +2,7 @@ node_modules/
 dist/
 .env
 *.log
+
+# graphify local scratch (graph.json/html/report ARE tracked — merge driver depends on it)
+graphify-out/cache/
+graphify-out/20*/
