@@ -102,6 +102,8 @@ Greenfield build, no existing codebase. Founder is a non-technical "vibe coder" 
 | Financial/audit records (Booking, Payment) never soft- or hard-deleted — cancellation/failure are statuses, not deletions | Bookings and payments must remain queryable for reconciliation and dispute resolution; deleting or hiding them would break audit reconstruction | 2026-08-15 | Active |
 | Booking/Payment carry nullable accountability fields (createdByUserId, processedByUserId) from schema time | A system handling real money needs a "who did this" trail for dispute resolution; cheaper to add now than retrofit after real bookings exist | 2026-08-15 | Active |
 | Price/total snapshots on booking records must capture the computed TOTAL, never a flat per-unit rate, whenever the underlying rate source varies (RatePlanDailyRate is per-date) | A flat per-night figure would silently misstate a booking's real cost the first time a rate plan had date-varying pricing — caught during Phase 1's audit before any booking logic was built on top of it | 2026-08-15 | Active |
+| Front-desk auth is JWT (stateless), not server-side sessions | Simpler to build, no Session table needed, matches the Railway/Render backend already chosen | 2026-08-15 | Active |
+| Accepted risk: JWT-stateless auth means no instant token revocation before 12-hour expiry — a stolen terminal or same-day-terminated employee retains a working token until natural expiry | Deliberate tradeoff for simplicity, made consciously during Phase 2's auth plan; documented so it's a known decision, not a silently-discovered gap | 2026-08-15 | Active (revisit if a real incident occurs or once multiple hotels are live) |
 
 ## Success Metrics
 
@@ -131,7 +133,7 @@ Greenfield build, no existing codebase. Founder is a non-technical "vibe coder" 
 
 | Resource | URL |
 |----------|-----|
-| Repository | Not yet created |
+| Repository | https://github.com/jbt-gif/-TA-Channel-Management |
 | Production | Not yet deployed |
 | Documentation | This file + .paul/ROADMAP.md |
 

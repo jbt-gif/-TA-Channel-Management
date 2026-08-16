@@ -17,7 +17,7 @@ Phases: 1 of 7 complete
 | Phase | Name | Plans | Status | Completed |
 |-------|------|-------|--------|-----------|
 | 1 | Data model + inventory foundation | 3/3 | ✅ Complete | 2026-08-15 |
-| 2 | Front-desk booking core | TBD | Not started | - |
+| 2 | Front-desk booking core | TBD | Planning | - |
 | 3 | Hotel admin config UI | TBD | Not started | - |
 | 4 | Channex integration | TBD | Not started | - |
 | 5 | Xendit payments | TBD | Not started | - |
@@ -52,9 +52,14 @@ Phases: 1 of 7 complete
 **Research:** Unlikely
 
 **Scope:**
+- Front-desk authentication (login + JWT + auth middleware) — added during planning; the original scope below implicitly requires knowing which hotel a request belongs to, and nothing built that yet. This is also the "multi-tenant auth/isolation phase" SPECIAL-FLOWS.md reserves a security-review pass for.
 - Calendar grid query API (date-range availability/rate lookup)
 - Atomic walk-in booking creation (overbooking-safe transaction)
 - React calendar grid UI + walk-in booking form
+
+**Plans:**
+- 02-01: Front-desk authentication (login, JWT, auth middleware)
+- 02-02+: TBD — drafting after 02-01
 
 ### Phase 3: Hotel admin config UI
 

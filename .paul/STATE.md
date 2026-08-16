@@ -6,15 +6,15 @@ See: .paul/PROJECT.md (updated 2026-08-15)
 
 **Core value:** Boutique PH resorts get one system that prevents overbookings, syncs rates/availability across major OTAs in real time, and collects local downpayments — without stitching together separate channel-manager, front-desk, and payment tools.
 
-**Current focus:** Phase 1 complete — ready to plan Phase 2 (Front-desk booking core)
+**Current focus:** Phase 2, Plan 02-01 (front-desk authentication) — planned, awaiting audit
 
 ## Current Position
 
 Milestone: v0.1 Initial Release
-Phase: 2 of 7 (Front-desk booking core)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-08-15 — Phase 1 (Data model + inventory foundation) complete, transitioned to Phase 2
+Phase: 2 of 7 (Front-desk booking core) — Planning
+Plan: 02-01 audited, awaiting APPLY (auth — not in original ROADMAP scope text, added because every later Phase 2 route needs hotelId-scoping context)
+Status: PLAN audited, ready for APPLY — pausing for explicit approval (security-sensitive, first plan handling real credentials)
+Last activity: 2026-08-15 — 02-01-PLAN.md audited and strengthened (5 must-have, 3 strongly-recommended upgrades applied)
 
 Progress:
 - Milestone: [██░░░░░░░░] 14%
@@ -25,7 +25,7 @@ Progress:
 Current loop state:
 ```
 PLAN ──▶ APPLY ──▶ UNIFY
-  ○        ○        ○     [Phase 2 not yet planned]
+  ✓        ○        ○     [02-01 planned, running audit next]
 ```
 
 ## Accumulated Context
@@ -36,7 +36,7 @@ PLAN ──▶ APPLY ──▶ UNIFY
 |----------|-------|--------|
 | Xendit-only payments (GCash/QR Ph/cards), no separate Maya integration | Pre-build | All payment work targets one provider |
 | Central Channex account held by founder; hotels never see Channex directly | Pre-build | ChannelMapping/webhook design assumes single Channex credential set |
-| Rate plans modeled as their own entity, distinct from RoomType | Pre-build | DailyInventory/ARI keyed by [roomTypeId, ratePlanId, date], not just room type |
+| Rate plans modeled as their own entity, distinct from RoomType | Pre-build | ARI has both a room-type dimension (availability) and a rate-plan dimension (price/minStay) — see the corrected DailyInventory/RatePlanDailyRate split below |
 | Testing-scenario-first policy: acceptance criteria include explicit edge-case scenarios before build starts | Pre-build | Applies to every future PLAN, not optional per-phase |
 | Security pass (security-review + gsd-security-auditor) required specifically on payment, webhook, and auth/multi-tenant phases | Pre-build | See .paul/SPECIAL-FLOWS.md |
 | gsd-verifier goal-backward audit reserved for one pre-launch gate (before first real hotel goes live), not run per-phase | Pre-build | Avoids per-phase ceremony while product is still being shaped |
@@ -46,6 +46,8 @@ PLAN ──▶ APPLY ──▶ UNIFY
 | 2026-08-15: Enterprise audit performed on 01-02-PLAN.md. Applied 1 must-have, 4 strongly-recommended upgrades. Deferred 1. Verdict: conditionally acceptable (amended) | Phase 1 | Added DB-level CHECK constraint enforcing bookedCount+heldCount<=availableCount — the actual overbooking backstop, not just documented intent; per-rate-plan verification instead of aggregate; zero-Rooms edge case covered |
 | 2026-08-15: Enterprise audit performed on 01-03-PLAN.md. Applied 4 must-have, 2 strongly-recommended upgrades. Deferred 3. Verdict: conditionally acceptable (amended) | Phase 1 | Fixed a real financial-correctness bug (BookingItem's flat per-night price snapshot contradicted 01-02's per-date rate model — renamed to totalPriceSnapshot, full-stay total); added accountability fields (Booking.createdByUserId, Payment.processedByUserId) and Booking.totalAmount for financial reconciliation |
 | 2026-08-15: Phase 1 (Data model + inventory foundation) complete — all 12 models live, migrated, and proven against real data across 3 plans | Phase 1 → Phase 2 transition | PROJECT.md evolved (Validated section populated); ROADMAP.md marked Phase 1 complete; git commit created for the phase |
+| 2026-08-15: Auth strategy decided — JWT (stateless), not server-side sessions | Phase 2 (checkpoint:decision, user-confirmed) | Simpler, no Session table; accepted tradeoff: no instant token revocation before 12h expiry — documented as a deliberate risk, not a gap |
+| 2026-08-15: Enterprise audit performed on 02-01-PLAN.md. Applied 5 must-have, 3 strongly-recommended upgrades. Deferred 3. Verdict: conditionally acceptable (amended) | Phase 2 | Added rate limiting, JWT_SECRET strength check, error-handling discipline, password policy on create-user.ts, and explicit documentation of the JWT-revocation tradeoff |
 
 ### Deferred Issues
 
@@ -61,12 +63,19 @@ PLAN ──▶ APPLY ──▶ UNIFY
 
 None yet.
 
+### Git State
+
+Last commit: 022b24e — feat(01-data-model-foundation): multi-tenant schema, shared-inventory model, booking core
+Branch: master
+Remote: https://github.com/jbt-gif/-TA-Channel-Management (pushed 2026-08-15)
+Feature branches merged: none
+
 ## Session Continuity
 
 Last session: 2026-08-15
-Stopped at: Phase 1 (Data model + inventory foundation) complete and transitioned — all 3 plans closed, PROJECT.md/ROADMAP.md evolved
-Next action: /paul:plan for Phase 2 (Front-desk booking core). Continuing under the same autonomous scope confirmed for Phase 1 unless the user says otherwise; manual APPLY approval still resumes starting Phase 4 (Channex) and Phase 5 (Xendit) per prior agreement.
-Resume file: .paul/ROADMAP.md
+Stopped at: Plan 02-01 (front-desk authentication) planned and audited, paused before APPLY
+Next action: Explicit user approval needed before /paul:apply on 02-01 — this is the first plan handling real credentials/JWT secrets, treated with the same manual-approval standard as Phase 4/5 rather than the low-risk Phase 1 autonomous scope.
+Resume file: .paul/phases/02-front-desk-booking-core/02-01-PLAN.md
 
 ---
 *STATE.md — Updated after every significant action*
