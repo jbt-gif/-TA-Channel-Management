@@ -6,26 +6,26 @@ See: .paul/PROJECT.md (updated 2026-08-15)
 
 **Core value:** Boutique PH resorts get one system that prevents overbookings, syncs rates/availability across major OTAs in real time, and collects local downpayments — without stitching together separate channel-manager, front-desk, and payment tools.
 
-**Current focus:** Phase 2, Plan 02-01 (front-desk authentication) — planned, awaiting audit
+**Current focus:** Phase 2, Plan 02-01 (front-desk authentication) — unified. Planning 02-02 (calendar grid API) next.
 
 ## Current Position
 
 Milestone: v0.1 Initial Release
-Phase: 2 of 7 (Front-desk booking core) — Planning
-Plan: 02-01 audited, awaiting APPLY (auth — not in original ROADMAP scope text, added because every later Phase 2 route needs hotelId-scoping context)
-Status: PLAN audited, ready for APPLY — pausing for explicit approval (security-sensitive, first plan handling real credentials)
-Last activity: 2026-08-15 — 02-01-PLAN.md audited and strengthened (5 must-have, 3 strongly-recommended upgrades applied)
+Phase: 2 of 7 (Front-desk booking core) — In progress
+Plan: 02-01 unified (1 plan complete, more TBD — calendar API, booking transaction, UI)
+Status: UNIFY complete
+Last activity: 2026-08-16 — 02-01-SUMMARY.md created; JWT auth live and security-verified against real Supabase dev DB (security-review clean, gsd-security-auditor 10/10 mitigations, one real timing-side-channel bug caught and fixed)
 
 Progress:
-- Milestone: [██░░░░░░░░] 14%
-- Phase 2: [░░░░░░░░░░] 0%
+- Milestone: [██░░░░░░░░] 16%
+- Phase 2: [██░░░░░░░░] ~25% (1 of an estimated 4 plans)
 
 ## Loop Position
 
 Current loop state:
 ```
 PLAN ──▶ APPLY ──▶ UNIFY
-  ✓        ○        ○     [02-01 planned, running audit next]
+  ✓        ✓        ✓     [02-01 closed. Next: plan 02-02]
 ```
 
 ## Accumulated Context
@@ -48,6 +48,7 @@ PLAN ──▶ APPLY ──▶ UNIFY
 | 2026-08-15: Phase 1 (Data model + inventory foundation) complete — all 12 models live, migrated, and proven against real data across 3 plans | Phase 1 → Phase 2 transition | PROJECT.md evolved (Validated section populated); ROADMAP.md marked Phase 1 complete; git commit created for the phase |
 | 2026-08-15: Auth strategy decided — JWT (stateless), not server-side sessions | Phase 2 (checkpoint:decision, user-confirmed) | Simpler, no Session table; accepted tradeoff: no instant token revocation before 12h expiry — documented as a deliberate risk, not a gap |
 | 2026-08-15: Enterprise audit performed on 02-01-PLAN.md. Applied 5 must-have, 3 strongly-recommended upgrades. Deferred 3. Verdict: conditionally acceptable (amended) | Phase 2 | Added rate limiting, JWT_SECRET strength check, error-handling discipline, password policy on create-user.ts, and explicit documentation of the JWT-revocation tradeoff |
+| 2026-08-15: 02-01 APPLY complete. security-review found zero HIGH/MEDIUM vulns. gsd-security-auditor found a real timing side-channel — malformed dummy bcrypt hash (57 chars, not 60) short-circuited comparison (~0.2ms vs ~260ms real), letting an attacker distinguish "no such email" from "wrong password" via response timing despite identical bodies. Fixed with a genuine cost-12 hash constant; independently re-verified, 10/10 mitigations closed | Phase 2 | Caught before shipping — neither my own manual review nor the automated smoke test (body-equality only) caught the timing gap; only the dedicated security-auditor's live timing measurement did |
 
 ### Deferred Issues
 
@@ -65,17 +66,18 @@ None yet.
 
 ### Git State
 
-Last commit: 022b24e — feat(01-data-model-foundation): multi-tenant schema, shared-inventory model, booking core
+Last commit: ce3f4c4 — docs(02-front-desk-booking-core): plan + audit front-desk auth, add ARCHITECTURE.md
 Branch: master
 Remote: https://github.com/jbt-gif/-TA-Channel-Management (pushed 2026-08-15)
 Feature branches merged: none
+Note: 02-01's actual code (src/app.ts, lib/auth.ts, middleware/, routes/, scripts/create-user.ts, smoke-test-auth.ts, SECURITY.md, 02-01-SUMMARY.md) is built and verified but not yet committed — pending next commit.
 
 ## Session Continuity
 
-Last session: 2026-08-15
-Stopped at: Plan 02-01 (front-desk authentication) planned and audited, paused before APPLY
-Next action: Explicit user approval needed before /paul:apply on 02-01 — this is the first plan handling real credentials/JWT secrets, treated with the same manual-approval standard as Phase 4/5 rather than the low-risk Phase 1 autonomous scope.
-Resume file: .paul/phases/02-front-desk-booking-core/02-01-PLAN.md
+Last session: 2026-08-16
+Stopped at: Plan 02-01 (front-desk authentication) complete, verified, and unified
+Next action: /paul:plan for 02-02 (calendar grid query API — date-range availability/rate lookup, using the auth middleware from 02-01). Commit + push 02-01's code first.
+Resume file: .paul/phases/02-front-desk-booking-core/02-01-SUMMARY.md
 
 ---
 *STATE.md — Updated after every significant action*
