@@ -6,26 +6,26 @@ See: .paul/PROJECT.md (updated 2026-08-15)
 
 **Core value:** Boutique PH resorts get one system that prevents overbookings, syncs rates/availability across major OTAs in real time, and collects local downpayments — without stitching together separate channel-manager, front-desk, and payment tools.
 
-**Current focus:** Phase 2, Plan 02-01 (front-desk authentication) — unified. Planning 02-02 (calendar grid API) next.
+**Current focus:** Phase 2, Plan 02-02 (calendar grid query API) — unified. Planning 02-03 (booking transaction) next.
 
 ## Current Position
 
 Milestone: v0.1 Initial Release
 Phase: 2 of 7 (Front-desk booking core) — In progress
-Plan: 02-01 unified (1 plan complete, more TBD — calendar API, booking transaction, UI)
+Plan: 02-02 unified (2 of an estimated 4 plans complete)
 Status: UNIFY complete
-Last activity: 2026-08-16 — 02-01-SUMMARY.md created; JWT auth live and security-verified against real Supabase dev DB (security-review clean, gsd-security-auditor 10/10 mitigations, one real timing-side-channel bug caught and fixed)
+Last activity: 2026-08-16 — 02-02-SUMMARY.md created; calendar grid API live and security-verified (security-review clean, gsd-security-auditor 8/8 mitigations verified live)
 
 Progress:
-- Milestone: [██░░░░░░░░] 16%
-- Phase 2: [██░░░░░░░░] ~25% (1 of an estimated 4 plans)
+- Milestone: [███░░░░░░░] 18%
+- Phase 2: [█████░░░░░] ~50% (2 of an estimated 4 plans complete)
 
 ## Loop Position
 
 Current loop state:
 ```
 PLAN ──▶ APPLY ──▶ UNIFY
-  ✓        ✓        ✓     [02-01 closed. Next: plan 02-02]
+  ✓        ✓        ✓     [02-02 closed. Next: plan 02-03]
 ```
 
 ## Accumulated Context
@@ -49,6 +49,8 @@ PLAN ──▶ APPLY ──▶ UNIFY
 | 2026-08-15: Auth strategy decided — JWT (stateless), not server-side sessions | Phase 2 (checkpoint:decision, user-confirmed) | Simpler, no Session table; accepted tradeoff: no instant token revocation before 12h expiry — documented as a deliberate risk, not a gap |
 | 2026-08-15: Enterprise audit performed on 02-01-PLAN.md. Applied 5 must-have, 3 strongly-recommended upgrades. Deferred 3. Verdict: conditionally acceptable (amended) | Phase 2 | Added rate limiting, JWT_SECRET strength check, error-handling discipline, password policy on create-user.ts, and explicit documentation of the JWT-revocation tradeoff |
 | 2026-08-15: 02-01 APPLY complete. security-review found zero HIGH/MEDIUM vulns. gsd-security-auditor found a real timing side-channel — malformed dummy bcrypt hash (57 chars, not 60) short-circuited comparison (~0.2ms vs ~260ms real), letting an attacker distinguish "no such email" from "wrong password" via response timing despite identical bodies. Fixed with a genuine cost-12 hash constant; independently re-verified, 10/10 mitigations closed | Phase 2 | Caught before shipping — neither my own manual review nor the automated smoke test (body-equality only) caught the timing gap; only the dedicated security-auditor's live timing measurement did |
+| 2026-08-16: Enterprise audit performed on 02-02-PLAN.md. Applied 2 must-have, 2 strongly-recommended upgrades. Deferred 0 new. Verdict: conditionally acceptable (amended) | Phase 2 | Fixed an error-handling scope gap (try/catch didn't cover the tenant-ownership check) and a data-completeness gap (unseeded dates would silently vanish from the calendar response instead of being marked seeded:false) |
+| 2026-08-16: 02-02 APPLY complete. security-review found zero HIGH/MEDIUM vulns. gsd-security-auditor ran live adversarial probes (hotelId spoofing, forced DB errors, unseeded-date edge case) and confirmed 8/8 mitigations hold — no new gaps found | Phase 2 | First real query-level multi-tenant isolation in the project, proven under live attack simulation, not just code review |
 
 ### Deferred Issues
 
@@ -66,18 +68,18 @@ None yet.
 
 ### Git State
 
-Last commit: ce3f4c4 — docs(02-front-desk-booking-core): plan + audit front-desk auth, add ARCHITECTURE.md
+Last commit: f837212 — feat(02-front-desk-booking-core): JWT front-desk authentication
 Branch: master
-Remote: https://github.com/jbt-gif/-TA-Channel-Management (pushed 2026-08-15)
+Remote: https://github.com/jbt-gif/-TA-Channel-Management (pushed 2026-08-16)
 Feature branches merged: none
-Note: 02-01's actual code (src/app.ts, lib/auth.ts, middleware/, routes/, scripts/create-user.ts, smoke-test-auth.ts, SECURITY.md, 02-01-SUMMARY.md) is built and verified but not yet committed — pending next commit.
+Note: repo now also has graphify knowledge-graph tooling installed (commit 4bc9d24, user-confirmed intentional, not part of the PAUL build) — post-commit/post-checkout hooks auto-regenerate graphify-out/ on every commit going forward.
 
 ## Session Continuity
 
 Last session: 2026-08-16
-Stopped at: Plan 02-01 (front-desk authentication) complete, verified, and unified
-Next action: /paul:plan for 02-02 (calendar grid query API — date-range availability/rate lookup, using the auth middleware from 02-01). Commit + push 02-01's code first.
-Resume file: .paul/phases/02-front-desk-booking-core/02-01-SUMMARY.md
+Stopped at: Plan 02-02 (calendar grid query API) planned and audited, paused before APPLY
+Next action: Explicit user approval needed before /paul:apply on 02-02 — this is the first plan implementing real query-level multi-tenant isolation, treated with the same manual-approval standard as 02-01/Phase 4/5.
+Resume file: .paul/phases/02-front-desk-booking-core/02-02-PLAN.md
 
 ---
 *STATE.md — Updated after every significant action*

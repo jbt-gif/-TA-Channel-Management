@@ -10,7 +10,8 @@
     "smoke-test": "tsx src/scripts/smoke-test.ts",
     "smoke-test-inventory": "tsx src/scripts/smoke-test-inventory.ts",
     "smoke-test-booking": "tsx src/scripts/smoke-test-booking.ts",
-    "smoke-test-auth": "tsx src/scripts/smoke-test-auth.ts"
+    "smoke-test-auth": "tsx src/scripts/smoke-test-auth.ts",
+    "smoke-test-calendar": "tsx src/scripts/smoke-test-calendar.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.1.0",

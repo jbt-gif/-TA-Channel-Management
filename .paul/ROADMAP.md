@@ -58,8 +58,9 @@ Phases: 1 of 7 complete
 - React calendar grid UI + walk-in booking form
 
 **Plans:**
-- 02-01: Front-desk authentication (login, JWT, auth middleware)
-- 02-02+: TBD — drafting after 02-01
+- 02-01: Front-desk authentication (login, JWT, auth middleware) ✅ Complete
+- 02-02: Calendar grid query API (room-type list, DailyInventory/RatePlanDailyRate grid, tenant isolation) — planned
+- 02-03+: TBD — booking transaction, UI
 
 ### Phase 3: Hotel admin config UI
 
