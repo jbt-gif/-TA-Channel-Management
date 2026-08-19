@@ -8,7 +8,7 @@ Multi-tenant Channel Manager and mini-PMS — originally scoped as B2B SaaS sold
 
 **v0.1 Initial Release** (v0.1.0)
 Status: In progress
-Phases: 3 of 7 complete
+Phases: 3 of 6 complete (Phase 5 resequenced out of v0.1's immediate order 2026-08-18 — see Phase 5 below; v0.1 now runs 1→2→3→4→6→7)
 
 ## Phases
 
@@ -19,8 +19,8 @@ Phases: 3 of 7 complete
 | 1 | Data model + inventory foundation | 3/3 | ✅ Complete | 2026-08-15 |
 | 2 | Front-desk booking core | 6/6 | ✅ Complete | 2026-08-18 |
 | 3 | Hotel admin config UI | 2/2 | ✅ Complete | 2026-08-18 |
-| 4 | Channex integration | TBD | Not started | - |
-| 5 | PayMongo payments | TBD | Not started | - |
+| 4 | Channex integration | 1/~3 | In Progress | - |
+| 5 | PayMongo payments | TBD | Resequenced — moved out of v0.1's immediate order, to be planned after v0.3 is finished | - |
 | 6 | Mobile housekeeping view | TBD | Not started | - |
 | 7 | Pre-launch gate | TBD | Not started | - |
 
@@ -87,31 +87,41 @@ Phases: 3 of 7 complete
 
 *Note: 03-01 flags an assumption for review — new room types seed with 0 physical Rooms since Room-unit CRUD isn't in this phase's stated scope; see 03-01-PLAN.md's Assumptions Requiring Review section. Still open, not blocking.*
 
-### Phase 4: Channex integration
+### Phase 4: Channex integration — In Progress
 
 **Goal:** Two-way OTA sync — incoming bookings create reservations atomically, outgoing rate/availability changes push out, staff see sync status and get alerted on failure.
 **Depends on:** Phase 1
-**Research:** Likely — real Channex webhook payload shapes and ARI push format needed before finalizing, not assumed from the brief alone.
+**Research:** Complete (2026-08-18) — see `.paul/phases/04-channex-integration/RESEARCH.md`. Key correction from the original scope wording: webhooks are thin notifications requiring a follow-up pull call, not directly-processable payloads; no HMAC signing exists (self-defined shared secret instead); ARI push is two separate rate-limited endpoints, not one.
 
 **Scope:**
-- `POST /api/webhooks/channex` handler (secret header verification, `booking_new`/`booking_modification`/`booking_cancellation`, atomic Prisma transaction)
-- Outgoing ARI push on rate/availability change
+- `POST /api/webhooks/channex` handler (shared-secret header verification, `booking_new`/`booking_modification`/`booking_cancellation`, pull full revision, atomic Prisma transaction reusing 02-03's pattern)
+- Outgoing ARI push on rate/availability change (rate-limited, batched per Channex's documented guidance)
 - Sync status indicator visible in the UI (not just background logs) + staff alert on failure
-- Webhook idempotency (dedupe on retry)
+- Webhook idempotency — two distinct keys, not one: per-event retry dedupe on Channex's `revision_id` via `Booking.externalBookingId`, and cross-event reservation lookup (modification/cancellation) on Channex's stable `booking_id` via `Booking.channexBookingId` (correction made during 04-01's security audit — the original single-key design silently broke modification/cancellation)
 
-### Phase 5: PayMongo payments
+**Plans (estimated 3, vertical slices — split during planning since the phase spans backend-incoming, backend-outgoing, and frontend concerns):**
+- 04-01: Incoming webhook handler (`Hotel.channexPropertyId` schema link, Channex API client, webhook route) — ✅ Complete (2026-08-19). Security gate: PASS, 14/14 threats closed across 3 rounds of live adversarial probing (2 real Critical bugs found and fixed). See `04-01-SUMMARY.md`.
+- 04-02: Outgoing ARI push worker — not yet planned
+- 04-03: Sync status UI + staff alerts — not yet planned
+
+*Note: 04-01 flags that `RatePlan.basePrice` (single field) is what would get pushed to Channex in 04-02 — the agency-model pivot's base-rate-vs-OTA-price schema question (already in STATE.md Deferred Issues) needs resolving before or during 04-02, not before 04-01.*
+
+### Phase 5: PayMongo payments — RESEQUENCED (moved out of v0.1's immediate order, 2026-08-18)
 
 **Goal:** Guests can pay a GCash/QR Ph/card downpayment; booking holds and releases correctly on the 15-minute timer.
 **Depends on:** Phase 1, Phase 2
-**Research:** Likely — real PayMongo API/webhook specifics needed before finalizing, plus per-hotel merchant-account onboarding flow (each hotel is its own PayMongo merchant, not one founder-held account).
+**Research:** Likely — real PayMongo API/webhook specifics needed before finalizing.
 
-**Scope note (added 2026-08-18, post-pivot):** Under the agency model, OTA-sourced bookings settle through the OTA itself, not PayMongo — this phase's real relevance narrows to walk-in/phone-booked guests paying a downpayment at the front desk, and later to guests booking through the direct-booking site (v0.3). Worth re-scoping (or re-sequencing after v0.3) at the time this phase is actually planned, rather than guessing now — not changed yet, flagged only.
+**Resequencing decision (2026-08-18, resolving the pivot-day scope note below):** OTA-sourced bookings settle through the OTA itself under the agency model, not PayMongo — that was this phase's original main driver and it no longer applies. Walk-in/phone guests at the front desk keep paying cash/GCash by hand at the counter for now (no change from today's behavior — Phase 2's booking form never collected payment). Real online payment matters again once v0.3's marketplace app is actually built (guests booking through the agency's own app need a real checkout) — **founder's explicit sequencing: this phase comes AFTER v0.3 is finished, not alongside it.** Decision: **pull this phase out of v0.1's immediate 1→4→6→7 order and defer planning it until v0.3 is done**, instead of guessing its shape now. v0.1 continues as Phase 4 (Channex) → Phase 6 (housekeeping) → Phase 7 (pre-launch gate) without Phase 5 blocking anything.
 
-**Scope:**
-- Downpayment link generation (GCash/QR Ph/cards, hosted checkout) against each hotel's own PayMongo account
+**Original scope note (2026-08-18, superseded by the resequencing decision above, kept for history):** "Under the agency model, OTA-sourced bookings settle through the OTA itself, not PayMongo — this phase's real relevance narrows to walk-in/phone-booked guests paying a downpayment at the front desk, and later to guests booking through the direct-booking site (v0.3). Worth re-scoping (or re-sequencing after v0.3) at the time this phase is actually planned, rather than guessing now — not changed yet, flagged only."
+
+**Scope (as originally conceived — will be revisited/likely rewritten when actually planned alongside v0.3):**
+- Downpayment link generation (GCash/QR Ph/cards, hosted checkout)
 - `heldCount` hold on booking creation, 15-minute auto-release worker
-- PayMongo webhook listener (signature verification, idempotent, per-hotel)
+- Payment webhook listener (signature verification, idempotent)
 - Payment UI: trigger checkout, see booking move pending → confirmed
+- Per-hotel-merchant-account assumption (each hotel its own PayMongo merchant) is void under the agency model — the agency's own bank account is now the natural target for any online payment collected, matching v0.3's marketplace app design. Provider choice (PayMongo vs. something else) also open again, decide at planning time.
 
 ### Phase 6: Mobile housekeeping view
 
@@ -124,7 +134,7 @@ Phases: 3 of 7 complete
 ### Phase 7: Pre-launch gate
 
 **Goal:** Not a build phase — the safety checkpoint before any real hotel's data enters the system.
-**Depends on:** Phase 2, Phase 4, Phase 5
+**Depends on:** Phase 2, Phase 4 (Phase 5 dependency dropped 2026-08-18 — resequenced out of v0.1's immediate order, see Phase 5 above; re-add here if it's built before go-live, otherwise this gate proceeds without it)
 
 **Scope:**
 - Error + uptime monitoring wired in

@@ -47,7 +47,7 @@ None — Phase 3 closed, Phase 4/5 not yet planned. Founder to choose which goes
 
 ### Planned (Next)
 
-- Phase 4 (Channex integration) or Phase 5 (PayMongo payments) — both depend only on Phase 1, either can go next toward finishing v0.1's demo
+- Phase 4 (Channex integration) — next up in v0.1. Phase 5 (PayMongo) resequenced out of v0.1's immediate order 2026-08-18 (see ROADMAP.md) — OTA bookings settle through the OTA now, not PayMongo; walk-in guests keep paying cash/GCash by hand for now; real online payment gets planned only after v0.3's marketplace app is finished (founder's explicit sequencing)
 - **v0.2 milestone (new, added 2026-08-18): Agency payout & accounting ledger** — per-booking margin calculation (OTA settlement minus hotel base rate minus OTA fees), per-hotel running balance, bank-deposit reconciliation against expected OTA payouts, disbursement records. Not yet phase-planned.
 - **v0.3 milestone (new, added 2026-08-18): Direct booking funnel + social integration** — a free direct-booking website per hotel, Facebook native booking integration, revenue/channel/occupancy analytics. Not yet phase-planned.
 
@@ -82,7 +82,7 @@ Greenfield build, no existing codebase. Founder is a non-technical "vibe coder" 
 ### Technical Constraints
 - Philippines timezone (Asia/Manila) only, for now
 - One staff account = one hotel (no chain/multi-property logins yet)
-- Each hotel is its own PayMongo merchant of record (own account, own KYC/business registration) — the founder never holds or moves guest payment money; single payment provider (PayMongo) covering GCash, QR Ph, and cards, not a separate Maya integration
+- ~~Each hotel is its own PayMongo merchant of record — the founder never holds or moves guest payment money~~ **Superseded 2026-08-18** by the agency-model pivot (agency now holds OTA-derived guest funds by design) and by Phase 5 being resequenced out of v0.1's immediate order — see Key Decisions and ROADMAP.md Phase 5. Payment provider/architecture for walk-in downpayments and v0.3's marketplace app is an open question again, to be decided when that work is actually planned.
 - You hold one central Channex.io account; hotels never see or manage Channex directly
 - Channex staging (free, no card required) used for demo/build; production plan only activated once a real paying hotel goes live
 

@@ -61,6 +61,11 @@ model Hotel {
   /// Deposit percentage collected on booking (0-100); DB CHECK constraint backstops
   /// the range in addition to application-layer validation.
   downpaymentPercent Int @default(20)
+  /// Links this hotel to its Channex property (staging.channex.io UUID). Nullable —
+  /// not every hotel is Channex-mapped immediately, matching this project's existing
+  /// pattern for optional per-hotel config. Unique — two hotels sharing a Channex
+  /// property would make webhook routing silently pick one at random.
+  channexPropertyId String? @unique
   deletedAt DateTime?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -228,8 +233,16 @@ model Booking {
   guest             Guest         @relation(fields: [guestId], references: [id], onDelete: Restrict)
   status            BookingStatus @default(PENDING_PAYMENT)
   source            BookingSource @default(WALK_IN)
-  /// Populated by Phase 4's Channex webhook handler for idempotency/dedupe on retry.
+  /// Populated by Phase 4's Channex webhook handler. This is the per-EVENT revision
+  /// id (Channex issues a new one for every booking_new/modification/cancellation),
+  /// used only for idempotency/dedupe of retries of that specific event — NOT stable
+  /// across a reservation's lifecycle. See channexBookingId for the stable identifier.
   externalBookingId String?
+  /// Channex's stable per-reservation booking_id (unlike externalBookingId/revision_id,
+  /// this stays the same across new/modification/cancellation events for one OTA
+  /// reservation) — the correct key for finding "the existing booking" when a
+  /// modification or cancellation webhook arrives.
+  channexBookingId  String?
   /// Populated by Phase 2's booking-creation transaction once it computes the real
   /// total from BookingItems — nullable until then so Payment has an authoritative
   /// figure to reconcile against without retrofitting this field after real data exists.
@@ -245,6 +258,7 @@ model Booking {
   payments     Payment[]
 
   @@unique([hotelId, externalBookingId])
+  @@unique([hotelId, channexBookingId])
   @@index([hotelId])
   @@index([guestId])
 }
