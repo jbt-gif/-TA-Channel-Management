@@ -1,0 +1,16 @@
+import type { ReactNode } from 'react'
+import { Navigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+
+export function ProtectedRoute({ children }: { children: ReactNode }) {
+  const { user, isLoading } = useAuth()
+
+  // Do not decide anything until the mount-time token validation resolves —
+  // deciding early would incorrectly bounce a genuinely valid session to
+  // /login during the async /api/me check.
+  if (isLoading) return null
+
+  if (!user) return <Navigate to="/login" replace />
+
+  return <>{children}</>
+}

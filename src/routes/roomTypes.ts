@@ -1,12 +1,16 @@
 import { Router } from "express";
+import { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth } from "../middleware/auth.js";
+import { seedInventoryForRoomType } from "../lib/seed-inventory.js";
 
 export const roomTypesRouter = Router();
 
 const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/;
 const MAX_RANGE_DAYS = 400;
 const MS_PER_DAY = 86_400_000;
+const ADMIN_ROLES = new Set(["HOTEL_ADMIN", "SUPER_ADMIN"]);
+const ROOM_TYPE_NOT_FOUND_BODY = { error: "Room type not found" };
 
 function toUtcDateStringOrNull(input: string): string | null {
   if (!DATE_FORMAT.test(input)) return null;
@@ -23,6 +27,15 @@ function addDays(dateStr: string, days: number): string {
   const d = new Date(`${dateStr}T00:00:00.000Z`);
   d.setUTCDate(d.getUTCDate() + days);
   return d.toISOString().slice(0, 10);
+}
+
+function todayManilaDateString(): string {
+  const manilaMs = Date.now() + 8 * 60 * 60 * 1000;
+  return new Date(manilaMs).toISOString().slice(0, 10);
+}
+
+function isValidName(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
 }
 
 roomTypesRouter.get("/", requireAuth, async (req, res) => {
@@ -42,6 +55,7 @@ roomTypesRouter.get("/", requireAuth, async (req, res) => {
           name: rp.name,
           isRefundable: rp.isRefundable,
           includesBreakfast: rp.includesBreakfast,
+          basePrice: rp.basePrice.toString(),
         })),
       }))
     );
@@ -155,6 +169,181 @@ roomTypesRouter.get("/:roomTypeId/calendar", requireAuth, async (req, res) => {
     });
   } catch (err) {
     console.error("Calendar grid error:", err instanceof Error ? err.message : err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+roomTypesRouter.post("/", requireAuth, async (req, res) => {
+  const { role, hotelId, userId } = req.auth!;
+  if (!ADMIN_ROLES.has(role)) {
+    res.status(403).json({ error: "Forbidden" });
+    return;
+  }
+
+  const body = req.body ?? {};
+  const { name, baseCapacity } = body;
+  if (!isValidName(name) || typeof baseCapacity !== "number" || !Number.isInteger(baseCapacity) || baseCapacity < 1) {
+    res.status(400).json({ error: "name (non-empty string) and baseCapacity (positive integer) are required" });
+    return;
+  }
+
+  try {
+    const roomType = await prisma.roomType.create({
+      data: { hotelId, name, baseCapacity, lastModifiedByUserId: userId },
+    });
+    await seedInventoryForRoomType(roomType.id);
+    res.status(201).json(roomType);
+  } catch (err) {
+    console.error("Room-type create error:", err instanceof Error ? err.message : err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+roomTypesRouter.patch("/:roomTypeId", requireAuth, async (req, res) => {
+  const { role, hotelId, userId } = req.auth!;
+  if (!ADMIN_ROLES.has(role)) {
+    res.status(403).json({ error: "Forbidden" });
+    return;
+  }
+
+  const roomTypeId = req.params.roomTypeId as string;
+  const body = req.body ?? {};
+  const data: { name?: string; baseCapacity?: number } = {};
+
+  if (body.name !== undefined) {
+    if (!isValidName(body.name)) {
+      res.status(400).json({ error: "name must be a non-empty string" });
+      return;
+    }
+    data.name = body.name;
+  }
+  if (body.baseCapacity !== undefined) {
+    if (typeof body.baseCapacity !== "number" || !Number.isInteger(body.baseCapacity) || body.baseCapacity < 1) {
+      res.status(400).json({ error: "baseCapacity must be a positive integer" });
+      return;
+    }
+    data.baseCapacity = body.baseCapacity;
+  }
+  if (Object.keys(data).length === 0) {
+    res.status(400).json({ error: "No fields to update" });
+    return;
+  }
+
+  try {
+    const existing = await prisma.roomType.findFirst({
+      where: { id: roomTypeId, hotelId, deletedAt: null },
+    });
+    if (!existing) {
+      res.status(404).json(ROOM_TYPE_NOT_FOUND_BODY);
+      return;
+    }
+
+    const updated = await prisma.roomType.update({
+      where: { id: roomTypeId },
+      data: { ...data, lastModifiedByUserId: userId },
+    });
+    res.status(200).json(updated);
+  } catch (err) {
+    console.error("Room-type update error:", err instanceof Error ? err.message : err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+roomTypesRouter.delete("/:roomTypeId", requireAuth, async (req, res) => {
+  const { role, hotelId, userId } = req.auth!;
+  if (!ADMIN_ROLES.has(role)) {
+    res.status(403).json({ error: "Forbidden" });
+    return;
+  }
+
+  const roomTypeId = req.params.roomTypeId as string;
+
+  try {
+    const existing = await prisma.roomType.findFirst({
+      where: { id: roomTypeId, hotelId, deletedAt: null },
+    });
+    if (!existing) {
+      res.status(404).json(ROOM_TYPE_NOT_FOUND_BODY);
+      return;
+    }
+
+    // Deleting a room type with an active future booking would silently orphan
+    // that reservation from every staff-facing list/calendar view (they filter
+    // deletedAt:null) — front-desk staff would lose the ability to browse to it
+    // to service that guest. Block the delete rather than let that happen.
+    const today = new Date(`${todayManilaDateString()}T00:00:00.000Z`);
+    const futureBooking = await prisma.bookingItem.findFirst({
+      where: {
+        roomTypeId,
+        checkOutDate: { gte: today },
+        booking: { status: { notIn: ["CANCELLED"] } },
+      },
+    });
+    if (futureBooking) {
+      res.status(409).json({ error: "Cannot delete: has upcoming bookings" });
+      return;
+    }
+
+    const deleted = await prisma.roomType.update({
+      where: { id: roomTypeId },
+      data: { deletedAt: new Date(), deletedByUserId: userId },
+    });
+    res.status(200).json({ id: deleted.id, deletedAt: deleted.deletedAt });
+  } catch (err) {
+    console.error("Room-type delete error:", err instanceof Error ? err.message : err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+roomTypesRouter.post("/:roomTypeId/rate-plans", requireAuth, async (req, res) => {
+  const { role, hotelId, userId } = req.auth!;
+  if (!ADMIN_ROLES.has(role)) {
+    res.status(403).json({ error: "Forbidden" });
+    return;
+  }
+
+  const roomTypeId = req.params.roomTypeId as string;
+  const body = req.body ?? {};
+  const { name, isRefundable, includesBreakfast, basePrice } = body;
+
+  if (
+    !isValidName(name) ||
+    typeof isRefundable !== "boolean" ||
+    typeof includesBreakfast !== "boolean" ||
+    typeof basePrice !== "number" ||
+    !Number.isFinite(basePrice) ||
+    basePrice <= 0
+  ) {
+    res.status(400).json({
+      error: "name (non-empty string), isRefundable, includesBreakfast (booleans), and basePrice (positive number) are required",
+    });
+    return;
+  }
+
+  try {
+    const roomType = await prisma.roomType.findFirst({
+      where: { id: roomTypeId, hotelId, deletedAt: null },
+    });
+    if (!roomType) {
+      res.status(404).json(ROOM_TYPE_NOT_FOUND_BODY);
+      return;
+    }
+
+    const ratePlan = await prisma.ratePlan.create({
+      data: {
+        hotelId,
+        roomTypeId,
+        name,
+        isRefundable,
+        includesBreakfast,
+        basePrice: new Prisma.Decimal(basePrice),
+        lastModifiedByUserId: userId,
+      },
+    });
+    await seedInventoryForRoomType(roomTypeId);
+    res.status(201).json(ratePlan);
+  } catch (err) {
+    console.error("Rate-plan create error:", err instanceof Error ? err.message : err);
     res.status(500).json({ error: "Internal server error" });
   }
 });

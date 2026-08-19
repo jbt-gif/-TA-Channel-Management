@@ -58,6 +58,9 @@ model Hotel {
   id        String    @id @default(cuid())
   name      String
   timezone  String    @default("Asia/Manila")
+  /// Deposit percentage collected on booking (0-100); DB CHECK constraint backstops
+  /// the range in addition to application-layer validation.
+  downpaymentPercent Int @default(20)
   deletedAt DateTime?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -98,6 +101,11 @@ model RoomType {
   hotel        Hotel     @relation(fields: [hotelId], references: [id], onDelete: Restrict)
   name         String
   baseCapacity Int
+  /// Who last created/updated/deleted this record, for dispute-resolution/audit
+  /// reconstruction — same reasoning as Booking.createdByUserId. Plain nullable
+  /// column, no FK relation, matching that existing convention.
+  lastModifiedByUserId String?
+  deletedByUserId      String?
   deletedAt    DateTime?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
@@ -123,6 +131,9 @@ model RatePlan {
   includesBreakfast Boolean
   /// PHP only — no currency column, project is PH-only per PROJECT.md scope
   basePrice         Decimal   @db.Decimal(10, 2)
+  /// Same accountability-trail reasoning as RoomType above.
+  lastModifiedByUserId String?
+  deletedByUserId      String?
   deletedAt         DateTime?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt

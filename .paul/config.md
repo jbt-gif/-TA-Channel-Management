@@ -29,7 +29,7 @@ enterprise_plan_audit:
   enabled: true
 ```
 
-**Why enabled:** Real money (Xendit payments) and guest PII flow through this system, and the founder is a non-technical builder relying on AI-assisted development. `/paul:plan` will suggest running `/paul:audit` before every APPLY.
+**Why enabled:** Real money (PayMongo payments) and guest PII flow through this system, and the founder is a non-technical builder relying on AI-assisted development. `/paul:plan` will suggest running `/paul:audit` before every APPLY.
 
 ### Goal-Backward Verification (gsd-verifier)
 

@@ -13,7 +13,7 @@ Skills and commands that apply to this project's work.
 | Work Type | Skill/Command | Priority | When Required | Notes |
 |-----------|---------------|----------|---------------|-------|
 | Security-sensitive code changes (payments, webhooks, auth, guest PII) | security-review | required | Before any APPLY is marked done if it touched payments, webhooks, auth, or guest PII | OWASP-style diff review |
-| Security-critical phase verification | gsd-security-auditor (agent) | required | After APPLY completes for: the Xendit payment phase, the Channex webhook handler phase, or the multi-tenant auth/isolation phase | Verifies implemented code against a stated threat model, produces SECURITY.md |
+| Security-critical phase verification | gsd-security-auditor (agent) | required | After APPLY completes for: the PayMongo payment phase, the Channex webhook handler phase, or the multi-tenant auth/isolation phase | Verifies implemented code against a stated threat model, produces SECURITY.md |
 | Goal-backward verification against project purpose | gsd-verifier (agent) | required | Once, before the first real hotel goes live (not per-phase) | Checks build against PROJECT.md Core Value + Success Metrics, not just one plan's own AC |
 
 **Priority Legend:**
@@ -24,7 +24,7 @@ Skills and commands that apply to this project's work.
 
 ## Phase Overrides
 
-None yet — will be added as specific phases (e.g. the Channex webhook handler phase, the Xendit payment phase) are defined during `/paul:plan`.
+None yet — will be added as specific phases (e.g. the Channex webhook handler phase, the PayMongo payment phase) are defined during `/paul:plan`.
 
 | Phase | Additional Skills | Notes |
 |-------|-------------------|-------|

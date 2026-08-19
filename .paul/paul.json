@@ -7,9 +7,9 @@
     "status": "in_progress"
   },
   "phase": {
-    "number": 2,
-    "name": "front-desk-booking-core",
-    "status": "in_progress"
+    "number": 3,
+    "name": "hotel-admin-config-ui",
+    "status": "complete"
   },
   "loop": {
     "plan": null,
@@ -17,7 +17,7 @@
   },
   "timestamps": {
     "created_at": "2026-08-15T00:00:00Z",
-    "updated_at": "2026-08-16T07:30:00Z"
+    "updated_at": "2026-08-18T06:00:00Z"
   },
   "satellite": {
     "groom": true

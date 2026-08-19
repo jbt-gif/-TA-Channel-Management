@@ -2,20 +2,20 @@
 
 ## What This Is
 
-A multi-tenant B2B Channel Manager and mini-PMS for boutique Philippine resorts (10-80 rooms). Syncs availability, rates, and inventory two-way with major OTAs (Agoda, Booking.com, Expedia, Traveloka, Airbnb, Trip.com) via Channex.io middleware, prevents overbookings with atomic transactions, handles local GCash/QR Ph/card downpayments via Xendit, and gives hotel staff a front-desk calendar grid plus mobile housekeeping view. Built to be sold as a SaaS product to multiple independent hotel clients, not a custom one-off build.
+**Business model pivoted 2026-08-18 — see Key Decisions.** This is no longer software sold to hotels; it's the internal platform for a hotel-revenue-management **agency**. The agency negotiates directly with boutique Philippine resorts (10-80 rooms) under a signed representation agreement: the hotel sets a base room rate, the agency lists it on the OTAs at a marked-up price, and the spread is the agency's margin. The platform still syncs availability/rates two-way with major OTAs (Agoda, Booking.com, Expedia, Traveloka, Airbnb, Trip.com) via Channex.io middleware, prevents overbookings with atomic transactions, and gives hotel staff a front-desk calendar grid plus mobile housekeeping view — all of that is unchanged and still being built toward a demo. New, not yet built: a payout/reconciliation ledger (OTAs pay the agency net of their commission; the agency owes each hotel its base-rate share) and, later, a direct-booking funnel website + Facebook booking per hotel.
 
 ## Core Value
 
-Boutique PH resorts get one system that prevents overbookings, syncs rates/availability across major OTAs in real time, and collects local downpayments — without stitching together separate channel-manager, front-desk, and payment tools.
+Boutique PH resorts get their online distribution fully managed — rates and availability synced across major OTAs, overbookings prevented — without hiring a revenue manager or juggling OTA extranets themselves. The agency earns its margin on the spread between the hotel's base rate and the OTA listing price, backed by software that makes the booking flow, the pricing, and the payout math auditable rather than manual.
 
 ## Current State
 
 | Attribute | Value |
 |-----------|-------|
-| Type | Application (SaaS) |
+| Type | Application (internal agency platform, formerly planned as SaaS) |
 | Version | 0.0.0 |
-| Status | In Development — Phase 1 of 7 complete |
-| Last Updated | 2026-08-15 |
+| Status | In Development — Phase 1-3 of 7 complete. Business model pivoted mid-build (2026-08-18); current phases (1-7) still target a working demo of the core booking engine, now serving the agency model instead of direct-to-hotel SaaS. |
+| Last Updated | 2026-08-18 |
 
 ## Requirements
 
@@ -24,7 +24,7 @@ Boutique PH resorts get one system that prevents overbookings, syncs rates/avail
 - 365-day ARI (availability/rate/inventory) grid per hotel, with configurable rate plans per room type
 - Two-way OTA sync via Channex — real-time ARI push, booking pull, atomic overbooking prevention
 - Front-desk manual booking + walk-in logging
-- GCash/QR Ph/card downpayments via Xendit, 15-minute hold with auto-release on expiry
+- GCash/QR Ph/card downpayments via PayMongo, 15-minute hold with auto-release on expiry
 - Mobile housekeeping status view
 - Self-service hotel admin UI for configuring room types, rate plans, and policies
 
@@ -34,16 +34,22 @@ Boutique PH resorts get one system that prevents overbookings, syncs rates/avail
 - ✓ Shared-availability schema (DailyInventory per room type, RatePlanDailyRate per rate plan) that prevents the same physical rooms being oversold across rate plans, with a DB-level CHECK constraint as the actual backstop (Phase 1)
 - ✓ 365-day inventory seed worker, Asia/Manila timezone-correct, idempotent (Phase 1)
 - ✓ Financial/audit-correct booking shape — price snapshots, accountability fields (createdByUserId/processedByUserId), status enums instead of soft-delete on financial records (Phase 1)
+- ✓ Front-desk JWT authentication (login, stateless tokens, role-gated middleware) — HOTEL_ADMIN/SUPER_ADMIN/FRONT_DESK/HOUSEKEEPING roles enforced tenant-scoped (Phase 2)
+- ✓ Calendar grid query API + UI — live availability/rate lookup per room type, Manila-anchored date handling, real browser-verified (Phase 2)
+- ✓ Atomic, overbooking-safe walk-in booking creation — conditional-UPDATE transaction pattern, proven live under 50 concurrent requests (exactly 1 succeeds), full front-desk UI on top (Phase 2)
+- ✓ Hotel self-service admin config UI — room type + rate plan CRUD (create/edit/delete, deletion blocked by active future bookings), hotel downpayment policy setting, all reachable by a HOTEL_ADMIN clicking through /admin, no founder-run script needed (Phase 3)
 
-**Not yet shipped:** none of the above is reachable via API or UI yet — Phase 1 is schema-only, by design. No user-facing ARI grid, booking flow, or OTA/payment integration exists until Phases 2–5.
+**Not yet shipped:** OTA sync (Channex), online payments (PayMongo/downpayment flow), mobile housekeeping view, and the agency-pivot subsystems (payout ledger v0.2, direct-booking site v0.3) — everything from Phase 4 onward.
 
 ### Active (In Progress)
 
-None — Phase 1 fully closed, Phase 2 not yet planned.
+None — Phase 3 closed, Phase 4/5 not yet planned. Founder to choose which goes next.
 
 ### Planned (Next)
 
-- Phase 2: Front-desk booking core — calendar grid query API, atomic overbooking-safe walk-in booking creation, React calendar grid UI
+- Phase 4 (Channex integration) or Phase 5 (PayMongo payments) — both depend only on Phase 1, either can go next toward finishing v0.1's demo
+- **v0.2 milestone (new, added 2026-08-18): Agency payout & accounting ledger** — per-booking margin calculation (OTA settlement minus hotel base rate minus OTA fees), per-hotel running balance, bank-deposit reconciliation against expected OTA payouts, disbursement records. Not yet phase-planned.
+- **v0.3 milestone (new, added 2026-08-18): Direct booking funnel + social integration** — a free direct-booking website per hotel, Facebook native booking integration, revenue/channel/occupancy analytics. Not yet phase-planned.
 
 ### Out of Scope (for now)
 
@@ -59,12 +65,14 @@ None — Phase 1 fully closed, Phase 2 not yet planned.
 - Limited technical sophistication — needs a simple, self-explanatory admin UI
 - Currently juggling multiple OTA extranets manually or paying for a generic international channel manager not suited to PH payment methods
 
-**Secondary:** The founder (you) — needs a central admin view across all onboarded hotels for support/monitoring (open item, not yet decided — see Key Decisions)
+**Secondary → now effectively primary:** The founder/agency (you) — under the agency model you actively set OTA markup pricing and manage payouts across every onboarded hotel, not just monitor for support. A central admin view across all hotels is now a core requirement, not an open item.
 
 ## Context
 
 **Business Context:**
 Pre-sales stage — no hotels signed up yet. Plan is to demo against Channex's free staging environment, land pilot hotels, then move to Channex production ($130/mo + ~$7/property) once there's paying revenue to justify it.
+
+**Business model pivot (2026-08-18):** Originally scoped as B2B SaaS sold to hotels (hotel pays a subscription/fee for the software). Now an agency/reseller model: the agency signs a representation agreement with each hotel, sets OTA listing prices above the hotel's base rate, and keeps the spread as margin. Flow, as confirmed by the founder: guest books via an OTA (e.g. Agoda) → OTA collects payment, deducts its own commission → OTA remits the net amount to the **agency's** bank account (not the hotel's) → agency owes and remits the hotel's base-rate share separately. This means the agency now holds guest-derived funds in transit, which the earlier "founder never holds guest money" architecture decision (below) was specifically designed to avoid — see the superseded row in Key Decisions. Software plumbing already built (multi-tenant schema, Channex-under-one-account design, front-desk booking core) is reusable as-is; what changes is who the software ultimately serves (agency, not hotel-as-customer) and two new required subsystems: a payout/reconciliation ledger (v0.2) and a direct-booking-site + FB integration (v0.3).
 
 **Technical Context:**
 Greenfield build, no existing codebase. Founder is a non-technical "vibe coder" — minimal coding background, relying on AI-assisted development. This elevates the importance of testing rigor, error visibility, and avoiding silent failure paths, since the founder can't independently spot subtle bugs by reading code.
@@ -74,7 +82,7 @@ Greenfield build, no existing codebase. Founder is a non-technical "vibe coder" 
 ### Technical Constraints
 - Philippines timezone (Asia/Manila) only, for now
 - One staff account = one hotel (no chain/multi-property logins yet)
-- Single payment provider (Xendit) covering GCash, QR Ph, and cards — not a separate Maya integration
+- Each hotel is its own PayMongo merchant of record (own account, own KYC/business registration) — the founder never holds or moves guest payment money; single payment provider (PayMongo) covering GCash, QR Ph, and cards, not a separate Maya integration
 - You hold one central Channex.io account; hotels never see or manage Channex directly
 - Channex staging (free, no card required) used for demo/build; production plan only activated once a real paying hotel goes live
 
@@ -86,12 +94,16 @@ Greenfield build, no existing codebase. Founder is a non-technical "vibe coder" 
 ### Compliance Constraints
 - Handles guest PII and real payment transactions — no formal compliance regime named yet (no explicit PCI/DPA requirement stated), but treat guest data and payment records with the same discipline as if one applied
 - A written service agreement (scope, liability limits, support definition) should exist before the first paying hotel goes live with real money flowing through the system — flagged, not yet drafted
+- **New, higher priority given the agency-model pivot:** the agency will hold guest-derived OTA payouts in its own bank account before remitting each hotel's share. Needs a lawyer/accountant opinion on (a) whether this requires BSP money-service-business registration or similar, and (b) how the agency recognizes revenue for tax purposes (full OTA payout vs. margin-only) before onboarding a real paying hotel under this model. Not yet obtained. The planned payout ledger (v0.2) should be built to produce a clean audit trail regardless of the answer — that's good practice either way, not a substitute for the legal opinion.
+- Each hotel needs a signed representation/management agreement authorizing the agency to list and manage their OTA presence — the founder's stated plan to address the "who owns the OTA account" question. Not yet drafted; same S-effort bucket as the general service agreement above.
 
 ## Key Decisions
 
 | Decision | Rationale | Date | Status |
 |----------|-----------|------|--------|
-| Xendit only (no separate Maya integration) | Xendit already aggregates GCash, QR Ph, and card payments in one integration; a second direct Maya integration would duplicate webhook/reconciliation work for no added coverage | 2026-08-15 | Active |
+| Xendit only (no separate Maya integration) | Xendit already aggregates GCash, QR Ph, and card payments in one integration; a second direct Maya integration would duplicate webhook/reconciliation work for no added coverage | 2026-08-15 | Superseded 2026-08-18 |
+| PayMongo (not Xendit) as the payment provider; each hotel is its own merchant of record | PayMongo has deeper native PH e-wallet coverage (GCash/Maya/GrabPay/ShopeePay/QR Ph in one account), faster T+1 settlement vs Xendit's T+2-T+7, transparent published pricing, and no 2026 reliability red flags — Xendit showed a documented pattern of payout disruptions and fraud-flagging complaints in PH. Per-hotel merchant accounts (not one founder-held payment account) keep the founder as a pure software vendor — payment liability, refunds, and AML/KYC sit with whoever actually receives the guest's money, not the founder. | 2026-08-18 | Superseded 2026-08-18 (same day — the agency-model pivot happened right after this was recorded). PayMongo itself likely still gets used for direct/walk-in bookings once the direct-booking site (v0.3) exists, but the "founder never holds guest money" reasoning no longer holds for OTA-sourced bookings under the new model — see the agency-payout decision below. |
+| **Business model pivot: agency/reseller, not direct SaaS** — the agency signs a representation agreement with each hotel, sets the OTA listing price above the hotel's base rate, and keeps the spread. OTAs (Agoda, Booking.com, etc.) collect guest payment, deduct their own commission, and remit the net amount to the **agency's** bank account — the agency then owes and separately remits each hotel's base-rate share. | Founder and business partner decided to pivot from selling software to hotels toward operating as the hotels' revenue-management agency, using the same platform internally. Confirmed payment flow (OTA → agency bank account → hotel) directly reverses the earlier "founder never holds guest money" decision above — flagged as a real compliance/tax question requiring a lawyer/accountant opinion before scaling past a pilot hotel, not yet obtained. | 2026-08-18 | Active |
 | Single central Channex account (you hold it, hotels are properties under it) | Standard SaaS channel-manager pattern; hotels never touch Channex directly, keeps OTA billing/contracts bundled into the product | 2026-08-15 | Active |
 | Rate plans modeled as their own entity, not folded into RoomType | OTAs (Agoda/Booking/Expedia) push/pull ARI per rate plan (refundable, non-refundable, breakfast-included, etc.), not just per room type — original brief's data model didn't have this dimension | 2026-08-15 | Active |
 | DailyInventory (availability count) keyed [roomTypeId, date] — shared across all rate plans of that room type. RatePlanDailyRate (price, minStay) keyed [ratePlanId, date] separately. | Corrects an earlier version of this decision that would have given each rate plan its own independent availableCount — that would let the same physical rooms be sold twice over via different rate plans, directly contradicting the zero-overbookings goal. Matches Channex's real ARI model (availability is room-type-scoped, rates are rate-plan-scoped). | 2026-08-15 | Active |
@@ -126,7 +138,7 @@ Greenfield build, no existing codebase. Founder is a non-technical "vibe coder" 
 | Database/ORM | PostgreSQL + Prisma | |
 | Frontend | React (Vite) + Tailwind CSS + TypeScript | |
 | OTA Middleware | Channex.io (REST API + Webhooks) | Staging (free) for build/demo, production once paying |
-| Payments | Xendit (GCash, QR Ph, cards) | Hosted checkout to keep PCI scope off this system |
+| Payments | PayMongo (GCash, QR Ph, cards) | Hosted checkout to keep PCI scope off this system; each hotel is its own PayMongo merchant of record |
 | Deployment | Vercel (frontend) / Railway or Render (backend + background worker) / Supabase (Postgres) | Background worker needed for hold-expiry timer and ARI push retries |
 
 ## Links
@@ -139,4 +151,4 @@ Greenfield build, no existing codebase. Founder is a non-technical "vibe coder" 
 
 ---
 *PROJECT.md — Updated when requirements or context change*
-*Last updated: 2026-08-15 after Phase 1*
+*Last updated: 2026-08-18 after Phase 3 (this evolution also catches up Phase 2, which shipped without a PROJECT.md update at the time)*
