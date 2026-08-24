@@ -134,8 +134,17 @@ model RatePlan {
   name              String
   isRefundable      Boolean
   includesBreakfast Boolean
-  /// PHP only — no currency column, project is PH-only per PROJECT.md scope
+  /// PHP only — no currency column, project is PH-only per PROJECT.md scope.
+  /// This is the hotel's own rate — what the agency owes/pays the hotel — never
+  /// what gets pushed to Channex. See otaPrice for the marked-up listing price.
   basePrice         Decimal   @db.Decimal(10, 2)
+  /// The marked-up price shown to OTA guests (agency's margin = otaPrice - basePrice).
+  /// Independent field, not a computed markup — user-confirmed schema choice
+  /// (2026-08-19) for flexibility across rate plans. Nullable: not every rate plan
+  /// has its OTA markup configured yet (no admin UI exists for this field yet —
+  /// that's a future plan). 04-03's automatic push worker sends THIS value to
+  /// Channex, never basePrice — pushing basePrice would give away the agency's margin.
+  otaPrice          Decimal?  @db.Decimal(10, 2)
   /// Same accountability-trail reasoning as RoomType above.
   lastModifiedByUserId String?
   deletedByUserId      String?

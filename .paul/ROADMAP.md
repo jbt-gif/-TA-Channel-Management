@@ -101,11 +101,11 @@ Phases: 3 of 6 complete (Phase 5 resequenced out of v0.1's immediate order 2026-
 
 **Plans (estimated 4, vertical slices — grew from 3 during planning; outgoing ARI push split into schema+client vs. worker+wiring, same "no frontend/worker infra existed yet" reasoning as Phase 2's split):**
 - 04-01: Incoming webhook handler (`Hotel.channexPropertyId` schema link, Channex API client, webhook route) — ✅ Complete (2026-08-19). Security gate: PASS, 14/14 threats closed across 3 rounds of live adversarial probing (2 real Critical bugs found and fixed). See `04-01-SUMMARY.md`.
-- 04-02: Schema resolution (`RatePlan.otaPrice`, user-confirmed as a separate field, not a computed markup) + Channex ARI push client (`pushAvailability`/`pushRestrictions`), live-proven against staging — Plan created
+- 04-02: Schema resolution (`RatePlan.otaPrice`, user-confirmed as a separate field, not a computed markup) + Channex ARI push client (`pushAvailability`/`pushRestrictions`) — ✅ Complete (2026-08-23). Live-proven against staging dashboard (rate + availability push both confirmed). Real gap found live: Channex returns 200 even on a failed per-item push, actual failure only in `meta.warnings[]` — fixed. See `04-02-SUMMARY.md`.
 - 04-03: Change-tracking + background worker — automatically triggers 04-02's push client on rate/availability change, respecting Channex's 10 req/min/property limit — not yet planned
 - 04-04: Sync status UI + staff alerts — not yet planned
 
-*Note: 04-01 flags that `RatePlan.basePrice` (single field) is what would get pushed to Channex in 04-02 — the agency-model pivot's base-rate-vs-OTA-price schema question (already in STATE.md Deferred Issues) needs resolving before or during 04-02, not before 04-01.*
+*Note: the agency-model pivot's base-rate-vs-OTA-price schema question is now resolved by 04-02 (`RatePlan.otaPrice`).*
 
 ### Phase 5: PayMongo payments — RESEQUENCED (moved out of v0.1's immediate order, 2026-08-18)
 
