@@ -387,6 +387,13 @@ model PushQueue {
   status     PushQueueStatus  @default(PENDING)
   attempts   Int              @default(0)
   lastError  String?
+  /// Set when an admin manually retries this row via 04-05's sync-status
+  /// endpoint — the worker itself never writes these two fields. Mirrors
+  /// this project's established accountability-field convention
+  /// (Booking.createdByUserId, Payment.processedByUserId,
+  /// RoomType/RatePlan.lastModifiedByUserId).
+  retriedByUserId String?
+  lastRetriedAt   DateTime?
   createdAt  DateTime         @default(now())
   updatedAt  DateTime         @updatedAt
 

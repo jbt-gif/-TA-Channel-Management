@@ -14,8 +14,8 @@ Boutique PH resorts get their online distribution fully managed — rates and av
 |-----------|-------|
 | Type | Application (internal agency platform, formerly planned as SaaS) |
 | Version | 0.0.0 |
-| Status | In Development — Phase 1-3 of 7 complete. Business model pivoted mid-build (2026-08-18); current phases (1-7) still target a working demo of the core booking engine, now serving the agency model instead of direct-to-hotel SaaS. |
-| Last Updated | 2026-08-18 |
+| Status | In Development — Phase 1-4 of 7 complete. Business model pivoted mid-build (2026-08-18); current phases (1-7) still target a working demo of the core booking engine, now serving the agency model instead of direct-to-hotel SaaS. |
+| Last Updated | 2026-08-24 |
 
 ## Requirements
 
@@ -38,16 +38,17 @@ Boutique PH resorts get their online distribution fully managed — rates and av
 - ✓ Calendar grid query API + UI — live availability/rate lookup per room type, Manila-anchored date handling, real browser-verified (Phase 2)
 - ✓ Atomic, overbooking-safe walk-in booking creation — conditional-UPDATE transaction pattern, proven live under 50 concurrent requests (exactly 1 succeeds), full front-desk UI on top (Phase 2)
 - ✓ Hotel self-service admin config UI — room type + rate plan CRUD (create/edit/delete, deletion blocked by active future bookings), hotel downpayment policy setting, all reachable by a HOTEL_ADMIN clicking through /admin, no founder-run script needed (Phase 3)
+- ✓ Two-way Channex OTA sync, full pipeline — incoming webhook handler creates/modifies/cancels reservations atomically (security-gated PASS, 14/14 threats closed under live adversarial probing), `RatePlan.otaPrice` distinguishes the hotel's base rate from the agency's marked-up OTA listing price, outgoing rate/availability changes push automatically via a background worker (no manual script call, live-proven against Channex staging), and hotel admins see sync status with an accountable, rate-limited manual retry for failures (Phase 4)
 
-**Not yet shipped:** OTA sync (Channex), online payments (PayMongo/downpayment flow), mobile housekeeping view, and the agency-pivot subsystems (payout ledger v0.2, direct-booking site v0.3) — everything from Phase 4 onward.
+**Not yet shipped:** online payments (PayMongo/downpayment flow), mobile housekeeping view, and the agency-pivot subsystems (payout ledger v0.2, direct-booking site v0.3) — everything from Phase 6 onward (Phase 5/PayMongo resequenced out of v0.1's immediate order).
 
 ### Active (In Progress)
 
-None — Phase 3 closed, Phase 4/5 not yet planned. Founder to choose which goes next.
+None — Phase 4 closed, Phase 6 not yet planned. Phase 5 (PayMongo) remains resequenced out of v0.1's immediate order.
 
 ### Planned (Next)
 
-- Phase 4 (Channex integration) — next up in v0.1. Phase 5 (PayMongo) resequenced out of v0.1's immediate order 2026-08-18 (see ROADMAP.md) — OTA bookings settle through the OTA now, not PayMongo; walk-in guests keep paying cash/GCash by hand for now; real online payment gets planned only after v0.3's marketplace app is finished (founder's explicit sequencing)
+- Phase 6 (Mobile housekeeping view) — next up in v0.1, per ROADMAP.md's 1→2→3→4→6→7 order. Phase 5 (PayMongo) resequenced out of v0.1's immediate order 2026-08-18 (see ROADMAP.md) — OTA bookings settle through the OTA now, not PayMongo; walk-in guests keep paying cash/GCash by hand for now; real online payment gets planned only after v0.3's marketplace app is finished (founder's explicit sequencing)
 - **v0.2 milestone (new, added 2026-08-18): Agency payout & accounting ledger** — per-booking margin calculation (OTA settlement minus hotel base rate minus OTA fees), per-hotel running balance, bank-deposit reconciliation against expected OTA payouts, disbursement records. Not yet phase-planned.
 - **v0.3 milestone (new, added 2026-08-18): Direct booking funnel + social integration** — a free direct-booking website per hotel, Facebook native booking integration, revenue/channel/occupancy analytics. Not yet phase-planned.
 
@@ -116,6 +117,9 @@ Greenfield build, no existing codebase. Founder is a non-technical "vibe coder" 
 | Price/total snapshots on booking records must capture the computed TOTAL, never a flat per-unit rate, whenever the underlying rate source varies (RatePlanDailyRate is per-date) | A flat per-night figure would silently misstate a booking's real cost the first time a rate plan had date-varying pricing — caught during Phase 1's audit before any booking logic was built on top of it | 2026-08-15 | Active |
 | Front-desk auth is JWT (stateless), not server-side sessions | Simpler to build, no Session table needed, matches the Railway/Render backend already chosen | 2026-08-15 | Active |
 | Accepted risk: JWT-stateless auth means no instant token revocation before 12-hour expiry — a stolen terminal or same-day-terminated employee retains a working token until natural expiry | Deliberate tradeoff for simplicity, made consciously during Phase 2's auth plan; documented so it's a known decision, not a silently-discovered gap | 2026-08-15 | Active (revisit if a real incident occurs or once multiple hotels are live) |
+| `RatePlan.otaPrice` — a separate, independent field from `basePrice`, not a computed markup | The agency-model pivot needs to distinguish the hotel's own rate from the agency's marked-up OTA listing price; a separate field lets markup vary per rate plan without a formula constraint, at the cost of two numbers to keep in sync | 2026-08-19 | Active |
+| Outgoing Channex ARI push respects the 10 req/min/property limit via a fixed 7-second worker tick (≤1 push/hotel/tick) rather than a token bucket | Simplest mechanism provably under the limit at this project's single-pilot-hotel scale; revisit only if real volume approaches the cap | 2026-08-24 | Active |
+| A human-triggered write to a table the background worker otherwise owns exclusively (manual push retry) gets its own accountability fields (`retriedByUserId`/`lastRetriedAt`), and never clears the failure evidence (`lastError`) it's retrying past | Matches this project's existing accountability-field convention (Booking/Payment/RoomType/RatePlan); caught by this project's own enterprise audit before the retry endpoint was built — preserving failure evidence directly serves PROJECT.md's "zero silent failures" success metric | 2026-08-24 | Active |
 
 ## Success Metrics
 
@@ -151,4 +155,4 @@ Greenfield build, no existing codebase. Founder is a non-technical "vibe coder" 
 
 ---
 *PROJECT.md — Updated when requirements or context change*
-*Last updated: 2026-08-18 after Phase 3 (this evolution also catches up Phase 2, which shipped without a PROJECT.md update at the time)*
+*Last updated: 2026-08-24 after Phase 4 (Channex integration) complete — 5/5 plans*

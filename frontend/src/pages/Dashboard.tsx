@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { fetchRoomTypes, fetchCalendar, type RoomType, type CalendarResponse } from '../api/roomTypes'
+import { fetchSyncStatus } from '../api/syncStatus'
 import { CalendarGrid } from '../components/CalendarGrid'
 import { BookingForm } from '../components/BookingForm'
 
@@ -28,6 +29,24 @@ function addDaysStr(dateStr: string, days: number): string {
 
 export function Dashboard() {
   const { user, logout } = useAuth()
+
+  const [failedSyncCount, setFailedSyncCount] = useState(0)
+
+  useEffect(() => {
+    if (!user?.role || !ADMIN_ROLES.has(user.role)) return
+    let cancelled = false
+    fetchSyncStatus()
+      .then((result) => {
+        if (!cancelled) setFailedSyncCount(result.counts.FAILED)
+      })
+      .catch(() => {
+        // Silent — the badge is a convenience indicator, not the sync-status
+        // page's own error surface. A failed fetch here just means no badge.
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [user?.role])
 
   const [roomTypes, setRoomTypes] = useState<RoomType[] | null>(null)
   const [roomTypesError, setRoomTypesError] = useState<string | null>(null)
@@ -116,6 +135,14 @@ export function Dashboard() {
             {user?.role && ADMIN_ROLES.has(user.role) && (
               <Link to="/admin" className="text-sm text-slate-700 underline">
                 Manage
+              </Link>
+            )}
+            {user?.role && ADMIN_ROLES.has(user.role) && failedSyncCount > 0 && (
+              <Link
+                to="/sync-status"
+                className="rounded border border-red-300 bg-red-50 px-2 py-1 text-xs font-medium text-red-700"
+              >
+                ⚠ {failedSyncCount} sync issue{failedSyncCount === 1 ? '' : 's'}
               </Link>
             )}
             <button

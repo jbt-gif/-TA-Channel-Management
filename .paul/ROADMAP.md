@@ -8,7 +8,7 @@ Multi-tenant Channel Manager and mini-PMS — originally scoped as B2B SaaS sold
 
 **v0.1 Initial Release** (v0.1.0)
 Status: In progress
-Phases: 3 of 6 complete (Phase 5 resequenced out of v0.1's immediate order 2026-08-18 — see Phase 5 below; v0.1 now runs 1→2→3→4→6→7)
+Phases: 4 of 6 complete (Phase 5 resequenced out of v0.1's immediate order 2026-08-18 — see Phase 5 below; v0.1 now runs 1→2→3→4→6→7)
 
 ## Phases
 
@@ -19,7 +19,7 @@ Phases: 3 of 6 complete (Phase 5 resequenced out of v0.1's immediate order 2026-
 | 1 | Data model + inventory foundation | 3/3 | ✅ Complete | 2026-08-15 |
 | 2 | Front-desk booking core | 6/6 | ✅ Complete | 2026-08-18 |
 | 3 | Hotel admin config UI | 2/2 | ✅ Complete | 2026-08-18 |
-| 4 | Channex integration | 4/~5 | In Progress | - |
+| 4 | Channex integration | 5/5 | ✅ Complete | 2026-08-24 |
 | 5 | PayMongo payments | TBD | Resequenced — moved out of v0.1's immediate order, to be planned after v0.3 is finished | - |
 | 6 | Mobile housekeeping view | TBD | Not started | - |
 | 7 | Pre-launch gate | TBD | Not started | - |
@@ -87,11 +87,13 @@ Phases: 3 of 6 complete (Phase 5 resequenced out of v0.1's immediate order 2026-
 
 *Note: 03-01 flags an assumption for review — new room types seed with 0 physical Rooms since Room-unit CRUD isn't in this phase's stated scope; see 03-01-PLAN.md's Assumptions Requiring Review section. Still open, not blocking.*
 
-### Phase 4: Channex integration — In Progress
+### Phase 4: Channex integration ✅ Complete (2026-08-24)
 
 **Goal:** Two-way OTA sync — incoming bookings create reservations atomically, outgoing rate/availability changes push out, staff see sync status and get alerted on failure.
 **Depends on:** Phase 1
 **Research:** Complete (2026-08-18) — see `.paul/phases/04-channex-integration/RESEARCH.md`. Key correction from the original scope wording: webhooks are thin notifications requiring a follow-up pull call, not directly-processable payloads; no HMAC signing exists (self-defined shared secret instead); ARI push is two separate rate-limited endpoints, not one.
+
+**Delivered (5/5 plans):** Full two-way OTA sync working end to end: incoming Channex webhooks create/modify/cancel reservations atomically (security gate PASS, 14/14 threats closed across 3 rounds of live adversarial probing, 2 real Critical bugs found and fixed); `RatePlan.otaPrice` resolves the agency-model's base-rate-vs-listing-price question; outgoing rate/availability changes push automatically via a background worker with no manual script call, live-proven against real Channex staging both for a manual push and a fully unattended one; hotel admins see sync status and can act on a failure via an accountable, rate-limited manual retry. Real API behavior discovered only through live testing (not anticipated by any plan or audit) surfaced twice: Channex returns HTTP 200 even on a rejected per-item push (actual failure only in `meta.warnings`), and enterprise audit caught a retry design that would have erased failure evidence and let a retry loop bypass the worker's own circuit breaker — both fixed before shipping.
 
 **Scope:**
 - `POST /api/webhooks/channex` handler (shared-secret header verification, `booking_new`/`booking_modification`/`booking_cancellation`, pull full revision, atomic Prisma transaction reusing 02-03's pattern)
@@ -104,7 +106,7 @@ Phases: 3 of 6 complete (Phase 5 resequenced out of v0.1's immediate order 2026-
 - 04-02: Schema resolution (`RatePlan.otaPrice`, user-confirmed as a separate field, not a computed markup) + Channex ARI push client (`pushAvailability`/`pushRestrictions`) — ✅ Complete (2026-08-23). Live-proven against staging dashboard (rate + availability push both confirmed). Real gap found live: Channex returns 200 even on a failed per-item push, actual failure only in `meta.warnings[]` — fixed. See `04-02-SUMMARY.md`.
 - 04-03: Change-tracking (`PushQueue` table + enqueue wiring on local-origin rate/availability changes, explicitly excluding webhook-originated changes) — ✅ Complete (2026-08-23). 5/5 ACs, zero deviations. See `04-03-SUMMARY.md`.
 - 04-04: Background worker — polls `PushQueue`, respects Channex's 10 req/min/property limit, calls 04-02's push client — ✅ Complete (2026-08-24). Live-proven fully unattended: a real API change reached Channex's staging dashboard with no manual push call. See `04-04-SUMMARY.md`.
-- 04-05: Sync status UI + staff alerts — not yet planned (renumbered from 04-04 during 04-03 planning)
+- 04-05: Sync status UI + staff alerts (`GET/POST /api/sync-status`, dashboard failure badge, accountable rate-limited retry) — ✅ Complete (2026-08-24). Live-proven both via automated browser testing (10/10) and the user's own live click-through. See `04-05-SUMMARY.md`.
 
 *Note: the agency-model pivot's base-rate-vs-OTA-price schema question is now resolved by 04-02 (`RatePlan.otaPrice`).*
 
@@ -209,4 +211,4 @@ Not yet phase-planned in detail — recorded here so the direction isn't lost, t
 
 ---
 *Roadmap created: 2026-08-15*
-*Last updated: 2026-08-18 — business model pivot to agency/reseller; v0.2, v0.3 (redefined as owned marketplace app), and v0.4 (offline resilience/circuit breaker) future milestones added; go-to-market/competitive-differentiation ideas captured under v0.3*
+*Last updated: 2026-08-24 — Phase 4 (Channex integration) complete, 5/5 plans; v0.1 now 4 of 6 phases complete*

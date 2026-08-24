@@ -4,6 +4,7 @@ import { ProtectedRoute } from './routes/ProtectedRoute'
 import { Login } from './pages/Login'
 import { Dashboard } from './pages/Dashboard'
 import { Admin } from './pages/Admin'
+import { SyncStatus } from './pages/SyncStatus'
 
 function App() {
   return (
@@ -24,6 +25,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Admin />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/sync-status"
+            element={
+              <ProtectedRoute>
+                <SyncStatus />
               </ProtectedRoute>
             }
           />
