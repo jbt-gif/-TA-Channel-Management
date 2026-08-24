@@ -1,7 +1,10 @@
 import { app } from "./app.js";
+import { startPushQueueWorker } from "./lib/pushQueueWorker.js";
 
 const port = process.env.PORT ? Number(process.env.PORT) : 3000;
 
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
 });
+
+startPushQueueWorker();

@@ -19,7 +19,7 @@ Phases: 3 of 6 complete (Phase 5 resequenced out of v0.1's immediate order 2026-
 | 1 | Data model + inventory foundation | 3/3 | ✅ Complete | 2026-08-15 |
 | 2 | Front-desk booking core | 6/6 | ✅ Complete | 2026-08-18 |
 | 3 | Hotel admin config UI | 2/2 | ✅ Complete | 2026-08-18 |
-| 4 | Channex integration | 2/~5 | In Progress | - |
+| 4 | Channex integration | 4/~5 | In Progress | - |
 | 5 | PayMongo payments | TBD | Resequenced — moved out of v0.1's immediate order, to be planned after v0.3 is finished | - |
 | 6 | Mobile housekeeping view | TBD | Not started | - |
 | 7 | Pre-launch gate | TBD | Not started | - |
@@ -102,8 +102,8 @@ Phases: 3 of 6 complete (Phase 5 resequenced out of v0.1's immediate order 2026-
 **Plans (estimated 5, vertical slices — grew from 3 during planning; outgoing ARI push split into schema+client (04-02) vs. change-tracking (04-03) vs. worker (04-04), same "no frontend/worker infra existed yet" reasoning as Phase 2's split):**
 - 04-01: Incoming webhook handler (`Hotel.channexPropertyId` schema link, Channex API client, webhook route) — ✅ Complete (2026-08-19). Security gate: PASS, 14/14 threats closed across 3 rounds of live adversarial probing (2 real Critical bugs found and fixed). See `04-01-SUMMARY.md`.
 - 04-02: Schema resolution (`RatePlan.otaPrice`, user-confirmed as a separate field, not a computed markup) + Channex ARI push client (`pushAvailability`/`pushRestrictions`) — ✅ Complete (2026-08-23). Live-proven against staging dashboard (rate + availability push both confirmed). Real gap found live: Channex returns 200 even on a failed per-item push, actual failure only in `meta.warnings[]` — fixed. See `04-02-SUMMARY.md`.
-- 04-03: Change-tracking (`PushQueue` table + enqueue wiring on local-origin rate/availability changes, explicitly excluding webhook-originated changes) — Plan created
-- 04-04: Background worker — polls `PushQueue`, respects Channex's 10 req/min/property limit, calls 04-02's push client — not yet planned
+- 04-03: Change-tracking (`PushQueue` table + enqueue wiring on local-origin rate/availability changes, explicitly excluding webhook-originated changes) — ✅ Complete (2026-08-23). 5/5 ACs, zero deviations. See `04-03-SUMMARY.md`.
+- 04-04: Background worker — polls `PushQueue`, respects Channex's 10 req/min/property limit, calls 04-02's push client — ✅ Complete (2026-08-24). Live-proven fully unattended: a real API change reached Channex's staging dashboard with no manual push call. See `04-04-SUMMARY.md`.
 - 04-05: Sync status UI + staff alerts — not yet planned (renumbered from 04-04 during 04-03 planning)
 
 *Note: the agency-model pivot's base-rate-vs-OTA-price schema question is now resolved by 04-02 (`RatePlan.otaPrice`).*

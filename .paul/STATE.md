@@ -6,26 +6,26 @@ See: .paul/PROJECT.md (updated 2026-08-15)
 
 **Core value:** Boutique PH resorts get one system that prevents overbookings, syncs rates/availability across major OTAs in real time, and collects local downpayments — without stitching together separate channel-manager, front-desk, and payment tools.
 
-**Current focus:** Phase 4 (Channex integration) — 04-03 (change-tracking: `PushQueue` table + enqueue wiring) complete, all 5 ACs PASS. 04-04 (background worker) next, not yet planned.
+**Current focus:** Phase 4 (Channex integration) — 04-04 (background worker) complete, all 5 ACs PASS. Only 04-05 (sync status UI) left in the phase, not yet planned.
 
 ## Current Position
 
 Milestone: v0.1 Initial Release
 Phase: 4 of 7 (Channex integration) — In Progress
-Plan: 04-03 complete
-Status: Loop closed. Ready for 04-04 planning.
-Last activity: 2026-08-23 — 04-03 UNIFY complete, SUMMARY.md written
+Plan: 04-04 complete
+Status: Loop closed. Ready for 04-05 planning.
+Last activity: 2026-08-24 — 04-04 UNIFY complete, SUMMARY.md written. Full outgoing ARI pipeline (schema → push client → queue → worker) live and unattended.
 
 Progress:
 - Milestone: [██████░░░░] ~43% (3 of 7 phases complete)
-- Phase 4: [██████░░░░] ~60% (3 of ~5 estimated plans complete)
+- Phase 4: [████████░░] ~80% (4 of ~5 estimated plans complete)
 
 ## Loop Position
 
 Current loop state:
 ```
 PLAN ──▶ APPLY ──▶ UNIFY
-  ✓        ✓        ✓     [04-03 complete — ready for next PLAN]
+  ✓        ✓        ✓     [04-04 complete — ready for next PLAN]
 ```
 
 **Scope-split note:** ROADMAP.md originally estimated Phase 2 at ~4 plans total, with the remaining work as one item ("React calendar grid UI + walk-in booking form"). Since no frontend exists yet in this project, that single item was split into 3 plans on subsystem/vertical-slice boundaries (PAUL's own sizing guidance: 2-3 tasks/plan, split on subsystem lines) — 02-04 (scaffold + login, this plan), 02-05 (calendar grid UI), 02-06 (booking form UI). Phase 2 is now 6 plans total, not 4. Decided during planning, not asked as a checkpoint — routine PAUL process judgment per standing instruction, reported here for visibility.
@@ -123,10 +123,10 @@ Note: graphify's own auto-regenerated files (graphify-out/*) and its own tooling
 
 ## Session Continuity
 
-Last session: 2026-08-23
-Stopped at: Phase 4 (Channex integration) — 04-03 complete (UNIFY closed, SUMMARY.md written). `PushQueue` table + enqueue wiring on `ratePlans.ts` PATCH and `bookings.ts` POST live and verified (5/5 ACs). 04-02 and 04-03 both uncommitted to git as of this point.
-Next action: Decide whether to commit 04-03's work to git before starting 04-04 planning (matches this project's established per-plan commit pattern). 04-04 (background worker: polls `PushQueue`, respects Channex's 10 req/min/property limit, calls 04-02's `pushAvailability`/`pushRestrictions`) not yet planned — it must design how to compute the actual push value from a queue row (re-read current `RatePlan`/`DailyInventory` state, not trust anything cached in the row) and how to throttle across many queued rows for the same property. Still open, not blocking: the Room-unit-CRUD gap; 02-03's Assumptions 1-2; CORS backend config; business-pivot deferred items (legal/tax opinion, representation agreement); 04-01's deferred concurrent-multi-event-ordering-across-different-events edge case; re-verify against one genuine Channex-delivered webhook before onboarding the first real OTA channel. 04-05 (sync status UI) remains unplanned.
-Resume file: .paul/phases/04-channex-integration/04-03-SUMMARY.md
+Last session: 2026-08-24
+Stopped at: Phase 4 (Channex integration) — 04-04 complete (UNIFY closed, SUMMARY.md written). Full outgoing ARI pipeline live: schema (04-02) → push client (04-02) → change-tracking queue (04-03) → background worker (04-04), all proven against real Channex staging including one fully unattended push. 04-04 uncommitted to git as of this point.
+Next action: Decide whether to commit 04-04's work to git before starting 04-05 planning (matches this project's established per-plan commit pattern). 04-05 (sync status UI + staff alerts — the last plan estimated for Phase 4) not yet planned; it will surface `PushQueue.status`/`attempts`/`lastError` to staff, and per 04-04's own Next Phase Readiness notes, should probably also add a manual "retry a FAILED row" action since none exists yet. Still open, not blocking: the Room-unit-CRUD gap; 02-03's Assumptions 1-2; CORS backend config; business-pivot deferred items (legal/tax opinion, representation agreement); 04-01's deferred concurrent-multi-event-ordering-across-different-events edge case; re-verify against one genuine Channex-delivered webhook before onboarding the first real OTA channel.
+Resume file: .paul/phases/04-channex-integration/04-04-SUMMARY.md
 
 ---
 *STATE.md — Updated after every significant action*
