@@ -54,6 +54,18 @@ enum ChannelMappingType {
   RATE_PLAN
 }
 
+enum PushQueueType {
+  AVAILABILITY
+  RATE
+}
+
+enum PushQueueStatus {
+  PENDING
+  PROCESSING
+  DONE
+  FAILED
+}
+
 model Hotel {
   id        String    @id @default(cuid())
   name      String
@@ -81,6 +93,7 @@ model Hotel {
   bookingItems       BookingItem[]
   payments           Payment[]
   channelMappings    ChannelMapping[]
+  pushQueue          PushQueue[]
 }
 
 model User {
@@ -352,4 +365,30 @@ model ChannelMapping {
   @@index([hotelId])
   @@index([roomTypeId])
   @@index([ratePlanId])
+}
+
+/// Durable record of a local-origin rate/availability change that needs pushing
+/// to Channex. Write-only from 04-03's perspective — 04-04's background worker
+/// is the only consumer that ever transitions `status` away from PENDING.
+/// Never written for webhook-originated changes (see channexWebhook.ts) —
+/// pushing back data Channex just told us would waste its 10 req/min/property
+/// limit for no benefit.
+model PushQueue {
+  id         String           @id @default(cuid())
+  hotelId    String
+  hotel      Hotel            @relation(fields: [hotelId], references: [id], onDelete: Restrict)
+  type       PushQueueType
+  /// Set when type=AVAILABILITY.
+  roomTypeId String?
+  /// Set when type=RATE.
+  ratePlanId String?
+  dateFrom   DateTime         @db.Date
+  dateTo     DateTime         @db.Date
+  status     PushQueueStatus  @default(PENDING)
+  attempts   Int              @default(0)
+  lastError  String?
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  @@index([hotelId, status])
 }

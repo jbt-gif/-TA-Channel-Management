@@ -6,26 +6,26 @@ See: .paul/PROJECT.md (updated 2026-08-15)
 
 **Core value:** Boutique PH resorts get one system that prevents overbookings, syncs rates/availability across major OTAs in real time, and collects local downpayments — without stitching together separate channel-manager, front-desk, and payment tools.
 
-**Current focus:** Phase 4 (Channex integration) — 04-02 (schema + Channex ARI push client) APPLY complete, live-verified on staging dashboard. UNIFY next.
+**Current focus:** Phase 4 (Channex integration) — 04-03 (change-tracking: `PushQueue` table + enqueue wiring) complete, all 5 ACs PASS. 04-04 (background worker) next, not yet planned.
 
 ## Current Position
 
 Milestone: v0.1 Initial Release
-Phase: 4 of 7 (Channex integration) — Applying
-Plan: 04-02 APPLY complete
-Status: All 3 tasks done, live checkpoint approved by user against real Channex staging dashboard
-Last activity: 2026-08-23 — Task 3 checkpoint approved (Sep 03/04 rate=3800, AVL=2 confirmed on Channex dashboard)
+Phase: 4 of 7 (Channex integration) — In Progress
+Plan: 04-03 complete
+Status: Loop closed. Ready for 04-04 planning.
+Last activity: 2026-08-23 — 04-03 UNIFY complete, SUMMARY.md written
 
 Progress:
 - Milestone: [██████░░░░] ~43% (3 of 7 phases complete)
-- Phase 4: [████░░░░░░] ~50% (2 of ~4 estimated plans complete)
+- Phase 4: [██████░░░░] ~60% (3 of ~5 estimated plans complete)
 
 ## Loop Position
 
 Current loop state:
 ```
 PLAN ──▶ APPLY ──▶ UNIFY
-  ✓        ✓        ○     [04-02 APPLY complete, awaiting UNIFY]
+  ✓        ✓        ✓     [04-03 complete — ready for next PLAN]
 ```
 
 **Scope-split note:** ROADMAP.md originally estimated Phase 2 at ~4 plans total, with the remaining work as one item ("React calendar grid UI + walk-in booking form"). Since no frontend exists yet in this project, that single item was split into 3 plans on subsystem/vertical-slice boundaries (PAUL's own sizing guidance: 2-3 tasks/plan, split on subsystem lines) — 02-04 (scaffold + login, this plan), 02-05 (calendar grid UI), 02-06 (booking form UI). Phase 2 is now 6 plans total, not 4. Decided during planning, not asked as a checkpoint — routine PAUL process judgment per standing instruction, reported here for visibility.
@@ -86,6 +86,7 @@ PLAN ──▶ APPLY ──▶ UNIFY
 | 2026-08-19: 04-02-PLAN.md created — split from the original single "outgoing ARI push" estimate into 04-02 (schema + push client, this plan) and a new 04-03 (change-tracking + background worker), since automatic-trigger wiring across many existing mutation points plus rate-limit-respecting batching is substantial standalone work, matching Phase 2's precedent of splitting when work didn't exist yet to plan against | Phase 4 | Phase 4 now estimated at 4 plans, not 3; old 04-03 (sync status UI) renumbered to 04-04 |
 | 2026-08-19: Enterprise audit performed on 04-02-PLAN.md. Applied 3 must-have, 2 strongly-recommended upgrades. Deferred 3. Verdict: conditionally acceptable (amended) | Phase 4 | Closed a real financial-integrity gap (no CHECK constraint on `otaPrice`, the field that drives the agency's actual margin — added `RatePlan_otaPrice_check CHECK (otaPrice IS NULL OR otaPrice > 0)`, matching this project's established real-backstop convention) and a real self-contradiction (Task 2 offered to modify `channexWebhook.ts`, which the plan's own boundaries section protected) and an unverifiable claim (Task 2 cited an automated read-back endpoint RESEARCH.md never confirmed exists — now correctly deferred to Task 3's dashboard checkpoint, which does provide real confirmation). Also added 429-distinction in `ChannexApiError` and clarified the verification script's `otaPrice` write must survive its own cleanup |
 | 2026-08-23: 04-02 APPLY complete — `RatePlan.otaPrice` schema field + CHECK constraint live; `pushAvailability`/`pushRestrictions` built and live-proven against real Channex staging API. Real API behavior discovered during Task 2 execution, not anticipated by plan/audit: Channex returns HTTP 200 even when a per-item change fails validation (e.g. unmapped room_type_id/rate_plan_id) — actual failure only surfaces in response body `meta.warnings[]`. Fixed by parsing warnings on every 200 response and throwing `ChannexApiError(422, ...)` when present; confirmed symmetric on both endpoints via direct curl probing. Task 3 checkpoint approved by user live against Channex staging dashboard: Sep 03/04 2026 showed rate=3,800 (otaPrice, not basePrice=3,000) and AVL=2, exactly matching the push | Phase 4 | `npm run smoke-test-booking-flow` re-confirmed no regression on existing walk-in flow. This is the fourth plan in this project (after 02-01, 02-03, 04-01) where live testing against a real system caught something no prior review layer anticipated |
+| 2026-08-23: 04-03-PLAN.md created — split the remaining "change-tracking + background worker" estimate into 04-03 (change-tracking: `PushQueue` table + enqueue wiring, no worker yet) and a new 04-04 (background worker, consumes the queue, rate-limit-aware), since both are genuinely separable subsystems and the worker can't be meaningfully planned until the queue schema it polls exists. Old 04-04 (sync status UI) renumbered to 04-05. Found while planning: `ratePlans.ts` PATCH never accepted `otaPrice` at all (only `basePrice`) — no real trigger point existed for a rate-change enqueue; 04-03 adds minimal field acceptance to create one, explicitly not full admin-UI scope. Also decided: webhook-originated inventory changes (`channexWebhook.ts`) must never enqueue a push, to avoid telling Channex about a change it just told us about and wasting the 10 req/min/property budget | Phase 4 | Phase 4 now estimated at 5 plans, not 4 |
 | 2026-08-19: **Major business-model pivot** — from direct-to-hotel B2B SaaS to an agency/reseller model. Agency signs a representation agreement with each hotel, sets OTA listing prices above the hotel's base rate, keeps the spread. Confirmed flow: OTA collects guest payment, deducts its commission, remits the net to the **agency's** bank account (not the hotel's); agency separately remits each hotel's base-rate share. Two new milestones queued: v0.2 (agency payout/reconciliation ledger) and v0.3 (direct-booking site + FB integration) | Process/business | PROJECT.md and ROADMAP.md updated (What This Is, Core Value, Business Context, Key Decisions, Target Users, Compliance Constraints, new Future Milestones section). v0.1's existing Phase 1-7 technical roadmap is unaffected in shape — still "finish the core booking engine to a demo" per founder's explicit instruction; only Phase 5 (PayMongo) got a scope-narrowing note flagged for its own planning time. This reverses the earlier "founder never holds guest money" PayMongo-merchant-of-record decision (marked Superseded, not deleted) — real compliance/tax question (BSP money-service registration? revenue recognition treatment?) flagged as needing a lawyer/accountant opinion before scaling past a pilot hotel, not yet obtained |
 
 ### Deferred Issues
@@ -123,9 +124,9 @@ Note: graphify's own auto-regenerated files (graphify-out/*) and its own tooling
 ## Session Continuity
 
 Last session: 2026-08-23
-Stopped at: Phase 4 (Channex integration) — 04-02 APPLY complete (all 3 tasks, Task 3 live checkpoint approved by user). SUMMARY.md not yet written; UNIFY not yet run.
-Next action: Write 04-02-SUMMARY.md, update ROADMAP.md Phase 4 plan count, then decide on committing 04-02's work to git (RatePlan.otaPrice migration, channex.ts push functions) before starting 04-03. Still open, not blocking: the Room-unit-CRUD gap; 02-03's Assumptions 1-2; CORS backend config; business-pivot deferred items (legal/tax opinion, representation agreement); 04-01's deferred concurrent-multi-event-ordering-across-different-events edge case; re-verify against one genuine Channex-delivered webhook before onboarding the first real OTA channel; no admin UI exists yet to set `otaPrice` (future plan). 04-03 (change-tracking + background worker for automatic ARI push, respecting Channex's 10 req/min/property limit) and 04-04 (sync status UI) remain unplanned.
-Resume file: .paul/phases/04-channex-integration/04-02-PLAN.md (complete — next new file will be 04-02-SUMMARY.md)
+Stopped at: Phase 4 (Channex integration) — 04-03 complete (UNIFY closed, SUMMARY.md written). `PushQueue` table + enqueue wiring on `ratePlans.ts` PATCH and `bookings.ts` POST live and verified (5/5 ACs). 04-02 and 04-03 both uncommitted to git as of this point.
+Next action: Decide whether to commit 04-03's work to git before starting 04-04 planning (matches this project's established per-plan commit pattern). 04-04 (background worker: polls `PushQueue`, respects Channex's 10 req/min/property limit, calls 04-02's `pushAvailability`/`pushRestrictions`) not yet planned — it must design how to compute the actual push value from a queue row (re-read current `RatePlan`/`DailyInventory` state, not trust anything cached in the row) and how to throttle across many queued rows for the same property. Still open, not blocking: the Room-unit-CRUD gap; 02-03's Assumptions 1-2; CORS backend config; business-pivot deferred items (legal/tax opinion, representation agreement); 04-01's deferred concurrent-multi-event-ordering-across-different-events edge case; re-verify against one genuine Channex-delivered webhook before onboarding the first real OTA channel. 04-05 (sync status UI) remains unplanned.
+Resume file: .paul/phases/04-channex-integration/04-03-SUMMARY.md
 
 ---
 *STATE.md — Updated after every significant action*

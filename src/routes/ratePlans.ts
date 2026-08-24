@@ -31,6 +31,7 @@ ratePlansRouter.patch("/:ratePlanId", requireAuth, async (req, res) => {
     isRefundable?: boolean;
     includesBreakfast?: boolean;
     basePrice?: Prisma.Decimal;
+    otaPrice?: Prisma.Decimal | null;
   } = {};
 
   if (body.name !== undefined) {
@@ -61,6 +62,19 @@ ratePlansRouter.patch("/:ratePlanId", requireAuth, async (req, res) => {
     }
     data.basePrice = new Prisma.Decimal(body.basePrice);
   }
+  if (body.otaPrice !== undefined) {
+    if (body.otaPrice === null) {
+      // Explicit null clears the OTA markup back to unset — otaPrice is nullable
+      // (not every rate plan has one configured), unlike basePrice which has no
+      // clear-path since it's required.
+      data.otaPrice = null;
+    } else if (typeof body.otaPrice !== "number" || !Number.isFinite(body.otaPrice) || body.otaPrice <= 0) {
+      res.status(400).json({ error: "otaPrice must be a positive number or null" });
+      return;
+    } else {
+      data.otaPrice = new Prisma.Decimal(body.otaPrice);
+    }
+  }
   if (Object.keys(data).length === 0) {
     res.status(400).json({ error: "No fields to update" });
     return;
@@ -79,6 +93,32 @@ ratePlansRouter.patch("/:ratePlanId", requireAuth, async (req, res) => {
       where: { id: ratePlanId },
       data: { ...data, lastModifiedByUserId: userId },
     });
+
+    // Enqueue a RATE push AFTER the real update has already committed — a
+    // queue-insert failure here must never roll back or fail a rate change
+    // that already succeeded. A missed queue row is recoverable; a rolled-back
+    // price change over a queue-table hiccup would not be.
+    if (data.otaPrice !== undefined || data.basePrice !== undefined) {
+      try {
+        const mapping = await prisma.channelMapping.findFirst({
+          where: { hotelId, mappingType: "RATE_PLAN", ratePlanId, deletedAt: null },
+        });
+        const hotel = await prisma.hotel.findUnique({
+          where: { id: hotelId },
+          select: { channexPropertyId: true },
+        });
+        if (mapping && hotel?.channexPropertyId) {
+          const dateFrom = new Date(`${todayManilaDateString()}T00:00:00.000Z`);
+          const dateTo = new Date(dateFrom.getTime() + 365 * 86_400_000);
+          await prisma.pushQueue.create({
+            data: { hotelId, type: "RATE", ratePlanId, dateFrom, dateTo },
+          });
+        }
+      } catch (err) {
+        console.error("PushQueue enqueue error (rate):", err instanceof Error ? err.message : err);
+      }
+    }
+
     res.status(200).json(updated);
   } catch (err) {
     console.error("Rate-plan update error:", err instanceof Error ? err.message : err);

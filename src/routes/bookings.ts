@@ -221,6 +221,32 @@ bookingsRouter.post("/", requireAuth, async (req, res) => {
       });
     });
 
+    // Enqueue an AVAILABILITY push AFTER the booking transaction has already
+    // committed — a queue-insert failure here must never affect a booking
+    // that already succeeded. Same reasoning as ratePlans.ts's rate enqueue.
+    try {
+      const mapping = await prisma.channelMapping.findFirst({
+        where: { hotelId, mappingType: "ROOM_TYPE", roomTypeId, deletedAt: null },
+      });
+      const hotel = await prisma.hotel.findUnique({
+        where: { id: hotelId },
+        select: { channexPropertyId: true },
+      });
+      if (mapping && hotel?.channexPropertyId) {
+        await prisma.pushQueue.create({
+          data: {
+            hotelId,
+            type: "AVAILABILITY",
+            roomTypeId,
+            dateFrom: new Date(`${checkInDate}T00:00:00.000Z`),
+            dateTo: new Date(`${checkOutDate}T00:00:00.000Z`),
+          },
+        });
+      }
+    } catch (err) {
+      console.error("PushQueue enqueue error (availability):", err instanceof Error ? err.message : err);
+    }
+
     res.status(201).json(booking);
   } catch (err) {
     if (err instanceof SoldOutError) {
