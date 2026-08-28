@@ -216,6 +216,12 @@ model Room {
   roomType           RoomType           @relation(fields: [roomTypeId], references: [id], onDelete: Restrict)
   label              String
   housekeepingStatus HousekeepingStatus @default(CLEAN)
+  /// Who last changed housekeepingStatus, and when — audit-added (06-01-AUDIT.md),
+  /// same reasoning/convention as RoomType.lastModifiedByUserId: without this, a
+  /// guest-quality dispute ("who marked this room clean?") is unreconstructable.
+  /// Plain nullable column, no FK relation, matching that existing convention.
+  lastChangedByUserId String?
+  lastChangedAt       DateTime?
   deletedAt          DateTime?
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
