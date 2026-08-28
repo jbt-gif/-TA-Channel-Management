@@ -6,26 +6,26 @@ See: .paul/PROJECT.md (updated 2026-08-15)
 
 **Core value:** Boutique PH resorts get one system that prevents overbookings, syncs rates/availability across major OTAs in real time, and collects local downpayments — without stitching together separate channel-manager, front-desk, and payment tools.
 
-**Current focus:** Phase 4 (Channex integration) COMPLETE — 5/5 plans. Full two-way OTA sync working end to end, live-proven. Next: plan Phase 6 (Mobile housekeeping view) — Phase 5 (PayMongo) remains resequenced out.
+**Current focus:** Phase 6 (Mobile housekeeping view) COMPLETE — 1/1 plans. Full core booking-engine demo loop now feature-complete except Phase 7 (pre-launch gate). Phase 5 (PayMongo) remains resequenced out.
 
 ## Current Position
 
 Milestone: v0.1 Initial Release
-Phase: 6 of 7 (Mobile housekeeping view) — Planning
-Plan: 06-01 APPLY complete
-Status: APPLY complete, ready for UNIFY
-Last activity: 2026-08-28 — 06-01 APPLY complete, checkpoint approved live by user
+Phase: 7 of 7 (Pre-launch gate) — Not started
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-08-28 — Phase 6 (Mobile housekeeping view) complete, transitioned. PROJECT.md/ROADMAP.md evolved.
 
 Progress:
-- Milestone: [████████░░] ~57% (4 of 7 phases complete)
-- Phase 6: [░░░░░░░░░░] 0%
+- Milestone: [████████░░] ~83% (5 of 6 active phases complete, Phase 5 resequenced out)
+- Phase 7: [░░░░░░░░░░] 0% (not yet planned)
 
 ## Loop Position
 
 Current loop state:
 ```
 PLAN ──▶ APPLY ──▶ UNIFY
-  ✓        ✓        ○     [06-01 APPLY complete, ready for UNIFY]
+  ○        ○        ○     [Phase 6 complete — ready to plan Phase 7]
 ```
 
 **Scope-split note:** ROADMAP.md originally estimated Phase 2 at ~4 plans total, with the remaining work as one item ("React calendar grid UI + walk-in booking form"). Since no frontend exists yet in this project, that single item was split into 3 plans on subsystem/vertical-slice boundaries (PAUL's own sizing guidance: 2-3 tasks/plan, split on subsystem lines) — 02-04 (scaffold + login, this plan), 02-05 (calendar grid UI), 02-06 (booking form UI). Phase 2 is now 6 plans total, not 4. Decided during planning, not asked as a checkpoint — routine PAUL process judgment per standing instruction, reported here for visibility.
@@ -104,7 +104,7 @@ PLAN ──▶ APPLY ──▶ UNIFY
 | Cross-hotel "super admin" view for founder (monitoring sync health/bookings across all hotels) | Pre-build discussion | M | Decide before or during roadmap planning |
 | Whether pilot hotels are already lined up or this is purely pre-sales | Pre-build discussion | - | Affects whether early phases build against real or assumed hotel data |
 | Whether this Supabase dev project becomes the Phase 7 staging environment or stays a separate throwaway dev DB | 01-01 audit | S | Phase 7 (pre-launch gate) |
-| Keeping DailyInventory.availableCount in sync when Rooms are added/removed/marked OOS after initial 365-day seeding | 01-02 audit | M | Phase 3 (room management UI) and Phase 6 (housekeeping OOS status) |
+| Keeping DailyInventory.availableCount in sync when Rooms are added/removed/marked OOS after initial 365-day seeding — Phase 6 shipped `OUT_OF_SERVICE` as a settable status but explicitly does NOT touch availableCount (PROJECT.md's stated Out of Scope item), confirmed still open | 01-02 audit, reconfirmed still open at 06-01 | M | No phase currently scheduled to close this; revisit if/when automatic OOS-inventory sync becomes a real operational need |
 | Backend has no CORS middleware — fine for local dev (frontend uses a Vite dev-proxy, same-origin from the browser's view), but will block every API call once frontend (Vercel) and backend (Railway/Render) are on different real origins | 02-04 audit | S | Before or during whichever plan first handles real (non-dev-proxy) deployment |
 | No physical Room (unit/label) CRUD anywhere in the product — new room types created via 03-01's admin API seed with availableCount:0 and stay that way until Rooms exist via the manual dev script | 03-01 plan/audit | M | Not currently scheduled in any named phase; revisit if hotel admins need to be fully self-sufficient without founder involvement |
 | Legal/tax opinion needed on the agency holding guest-derived OTA payouts before remitting hotel shares — BSP money-service-business registration question (BSP Circular 1198 "merchant payment acceptance" language is the specific clause to check against), revenue-recognition treatment for tax. Research (2026-08-18) found no clean precedent either way — leans "probably ordinary commission-agent, not MSB" but not certain. Founder's read: workable in practice, other PH companies operate this way informally; still wants a lawyer to confirm before scaling past a pilot hotel — not a blocker for the demo build | Business-model pivot discussion, 2026-08-18; researched + risk-accepted-pending-lawyer 2026-08-18 | M | Before onboarding a real paying hotel under the agency model, not before building the payout ledger (v0.2) — good audit-trail software helps this conversation, doesn't replace it |
@@ -131,9 +131,9 @@ Note: graphify's own auto-regenerated files (graphify-out/*) and its own tooling
 ## Session Continuity
 
 Last session: 2026-08-28
-Stopped at: **06-01 APPLY complete, checkpoint approved.** PLAN → AUDIT (1 must-have: Room accountability fields) → plan-critic (2 must-fix: no-op accountability guard, checkpoint seed prerequisite) → APPLY (3 auto tasks PASS, 1 self-caught bug fixed pre-checkpoint) → checkpoint (1 live spec gap found and fixed: Dashboard nav link). Ready for UNIFY.
-Next action: Run `/paul:unify` to reconcile and close Phase 6's loop, then decide next phase — Phase 7 (pre-launch gate) is the only remaining named v0.1 phase (Phase 5/PayMongo stays resequenced out). Still open, not blocking: the Room-unit-CRUD gap; 02-03's Assumptions 1-2; CORS backend config; business-pivot deferred items (legal/tax opinion, representation agreement); 04-01's deferred concurrent-multi-event-ordering edge case; re-verify against one genuine Channex-delivered webhook before onboarding the first real OTA channel; `ChannelMapping` uniqueness gap and PushQueue-insert-failure invisibility; pre-existing uncommitted `.paul/config.md` change (audit/critic required:true, Strix pentest section) — not part of this plan, left for the user.
-Resume file: .paul/phases/06-mobile-housekeeping-view/06-01-PLAN.md
+Stopped at: **Phase 6 (Mobile housekeeping view) COMPLETE — 1/1 plans, transitioned.** PLAN → AUDIT (1 must-have: Room accountability fields) → plan-critic (2 must-fix: no-op accountability guard, checkpoint seed prerequisite) → APPLY (3 auto tasks PASS, 1 self-caught bug fixed pre-checkpoint) → checkpoint (1 live spec gap found and fixed: Dashboard nav link) → UNIFY. PROJECT.md/ROADMAP.md evolved.
+Next action: Plan Phase 7 (pre-launch gate) — the last phase of v0.1 (Phase 5/PayMongo stays resequenced out; do not plan it next without an explicit reason to revisit that sequencing). Phase 7 is not a build phase: error/uptime monitoring, staging/production separation, backup-restore test, real security review, one goal-backward `gsd-verifier` audit against Core Value + Success Metrics. Still open, not blocking: the Room-unit-CRUD gap; 02-03's Assumptions 1-2; CORS backend config; business-pivot deferred items (legal/tax opinion, representation agreement); 04-01's deferred concurrent-multi-event-ordering edge case; re-verify against one genuine Channex-delivered webhook before onboarding the first real OTA channel; `ChannelMapping` uniqueness gap and PushQueue-insert-failure invisibility; the housekeeping-OOS-doesn't-sync-to-availability gap (Phase 6, matches PROJECT.md's stated Out of Scope); pre-existing uncommitted `.paul/config.md` change (audit/critic required:true, Strix pentest section) — not part of any plan this session, left for the user.
+Resume file: .paul/ROADMAP.md
 
 ---
 *STATE.md — Updated after every significant action*

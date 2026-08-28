@@ -8,7 +8,7 @@ Multi-tenant Channel Manager and mini-PMS — originally scoped as B2B SaaS sold
 
 **v0.1 Initial Release** (v0.1.0)
 Status: In progress
-Phases: 4 of 6 complete (Phase 5 resequenced out of v0.1's immediate order 2026-08-18 — see Phase 5 below; v0.1 now runs 1→2→3→4→6→7)
+Phases: 5 of 6 complete (Phase 5 resequenced out of v0.1's immediate order 2026-08-18 — see Phase 5 below; v0.1 now runs 1→2→3→4→6→7). Only Phase 7 (pre-launch gate) remains.
 
 ## Phases
 
@@ -21,7 +21,7 @@ Phases: 4 of 6 complete (Phase 5 resequenced out of v0.1's immediate order 2026-
 | 3 | Hotel admin config UI | 2/2 | ✅ Complete | 2026-08-18 |
 | 4 | Channex integration | 5/5 | ✅ Complete | 2026-08-24 |
 | 5 | PayMongo payments | TBD | Resequenced — moved out of v0.1's immediate order, to be planned after v0.3 is finished | - |
-| 6 | Mobile housekeeping view | 1 est. | Planning (06-01 created) | - |
+| 6 | Mobile housekeeping view | 1/1 | ✅ Complete | 2026-08-28 |
 | 7 | Pre-launch gate | TBD | Not started | - |
 
 ## Phase Details
@@ -127,13 +127,19 @@ Phases: 4 of 6 complete (Phase 5 resequenced out of v0.1's immediate order 2026-
 - Payment UI: trigger checkout, see booking move pending → confirmed
 - Per-hotel-merchant-account assumption (each hotel its own PayMongo merchant) is void under the agency model — the agency's own bank account is now the natural target for any online payment collected, matching v0.3's marketplace app design. Provider choice (PayMongo vs. something else) also open again, decide at planning time.
 
-### Phase 6: Mobile housekeeping view
+### Phase 6: Mobile housekeeping view ✅ Complete (2026-08-28)
 
 **Goal:** Housekeeping staff update room status from a phone-sized screen.
 **Depends on:** Phase 1
+**Research:** Not needed — `Room`/`HousekeepingStatus` schema already existed from Phase 1, unused until this phase.
+
+**Delivered (1/1 plan):** Tenant-scoped, role-gated `GET/PATCH /api/rooms` (HOUSEKEEPING/HOTEL_ADMIN/SUPER_ADMIN can PATCH; any authenticated role can GET) plus a mobile-first `/housekeeping` page — rooms grouped by room type, four tap-target status buttons, no horizontal scroll at 375px, real-device/Playwright-verified. Enterprise audit closed a real audit-trail gap (this would've been the only mutating endpoint in the project with no who/when accountability record — added `Room.lastChangedByUserId`/`lastChangedAt`); `paul-plan-critic` then caught a second real bug the audit didn't (unconditional re-stamping on a same-value resubmit would have silently corrupted that same accountability trail — fixed with a no-op guard). One bug self-caught via live Playwright verification before the checkpoint (PATCH-response merge dropping `roomTypeName`), one usability gap found live at the checkpoint and fixed on the spot (no way to reach `/housekeeping` from `/dashboard` without typing the URL).
 
 **Scope:**
 - Mobile-first room status view (CLEAN/DIRTY/INSPECTING/OUT_OF_SERVICE)
+
+**Plans (1/1):**
+- 06-01: Rooms API + mobile housekeeping view — ✅ Complete (2026-08-28). See `06-01-SUMMARY.md`.
 
 ### Phase 7: Pre-launch gate
 
@@ -211,4 +217,4 @@ Not yet phase-planned in detail — recorded here so the direction isn't lost, t
 
 ---
 *Roadmap created: 2026-08-15*
-*Last updated: 2026-08-24 — Phase 4 (Channex integration) complete, 5/5 plans; v0.1 now 4 of 6 phases complete*
+*Last updated: 2026-08-28 — Phase 6 (Mobile housekeeping view) complete, 1/1 plans; v0.1 now 5 of 6 phases complete — only Phase 7 (pre-launch gate) remains*
