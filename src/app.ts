@@ -8,14 +8,23 @@ import { syncStatusRouter } from "./routes/syncStatus.js";
 import { roomsRouter } from "./routes/rooms.js";
 import { channexWebhookRouter } from "./routes/channexWebhook.js";
 import { requireAuth } from "./middleware/auth.js";
+import { corsMiddleware } from "./middleware/cors.js";
 
 export const app = express();
+
+// Trusts exactly one hop (Render's own reverse proxy) — not `true`/unbounded,
+// which would let a client forge its own X-Forwarded-For and bypass
+// express-rate-limit's per-IP login limiter (src/routes/auth.ts). Without
+// this, req.ip resolves to the proxy's address for every request once
+// deployed, collapsing every visitor into one shared rate-limit bucket.
+app.set("trust proxy", 1);
 
 // Mounted before the global express.json() so this route's own scoped
 // (256kb-limited) body parser handles it, not the global default-limit one —
 // this is an internet-facing, lighter-auth (shared-secret, not JWT) endpoint.
 app.use("/api/webhooks/channex", channexWebhookRouter);
 
+app.use(corsMiddleware);
 app.use(express.json());
 
 app.get("/health", (_req, res) => {
