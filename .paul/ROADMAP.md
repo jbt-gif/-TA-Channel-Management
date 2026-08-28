@@ -21,7 +21,7 @@ Phases: 4 of 6 complete (Phase 5 resequenced out of v0.1's immediate order 2026-
 | 3 | Hotel admin config UI | 2/2 | ✅ Complete | 2026-08-18 |
 | 4 | Channex integration | 5/5 | ✅ Complete | 2026-08-24 |
 | 5 | PayMongo payments | TBD | Resequenced — moved out of v0.1's immediate order, to be planned after v0.3 is finished | - |
-| 6 | Mobile housekeeping view | TBD | Not started | - |
+| 6 | Mobile housekeeping view | 1 est. | Planning (06-01 created) | - |
 | 7 | Pre-launch gate | TBD | Not started | - |
 
 ## Phase Details

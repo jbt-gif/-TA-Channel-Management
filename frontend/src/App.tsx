@@ -5,6 +5,7 @@ import { Login } from './pages/Login'
 import { Dashboard } from './pages/Dashboard'
 import { Admin } from './pages/Admin'
 import { SyncStatus } from './pages/SyncStatus'
+import { Housekeeping } from './pages/Housekeeping'
 
 function App() {
   return (
@@ -33,6 +34,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <SyncStatus />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/housekeeping"
+            element={
+              <ProtectedRoute>
+                <Housekeeping />
               </ProtectedRoute>
             }
           />
