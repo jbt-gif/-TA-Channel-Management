@@ -7,6 +7,7 @@ import { CalendarGrid } from '../components/CalendarGrid'
 import { BookingForm } from '../components/BookingForm'
 
 const ADMIN_ROLES = new Set(['HOTEL_ADMIN', 'SUPER_ADMIN'])
+const HOUSEKEEPING_LINK_ROLES = new Set(['HOUSEKEEPING', 'HOTEL_ADMIN', 'SUPER_ADMIN'])
 
 const WEEK_DAYS = 7
 const WINDOW_DAYS = 14
@@ -135,6 +136,11 @@ export function Dashboard() {
             {user?.role && ADMIN_ROLES.has(user.role) && (
               <Link to="/admin" className="text-sm text-slate-700 underline">
                 Manage
+              </Link>
+            )}
+            {user?.role && HOUSEKEEPING_LINK_ROLES.has(user.role) && (
+              <Link to="/housekeeping" className="text-sm text-slate-700 underline">
+                Housekeeping
               </Link>
             )}
             {user?.role && ADMIN_ROLES.has(user.role) && failedSyncCount > 0 && (
