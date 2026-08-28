@@ -119,9 +119,9 @@ None yet.
 
 ### Git State
 
-Last commit: e4d1ce8 — feat(02,03): catch up front-desk booking core + hotel admin config UI (66 files — frontend/ committed for the first time, Phase 2 plans 02-03..02-06, all of Phase 3, PROJECT.md/ROADMAP.md evolution)
+Last commit: 409aba9 — feat(04-channex-integration): sync status UI + retry — Phase 4 complete (15 files — 04-05's sync status API/UI, PushQueue retry accountability fields, PROJECT.md/ROADMAP.md phase-transition evolution)
 Branch: master
-Remote: https://github.com/jbt-gif/-TA-Channel-Management (pushed 2026-08-16; this commit not yet pushed)
+Remote: https://github.com/jbt-gif/-TA-Channel-Management (pushed 2026-08-16; 7 commits ahead, not yet pushed since)
 Feature branches merged: none
 Note: graphify's own auto-regenerated files (graphify-out/*) and its own tooling dirs (.agents/, .carl/, .claude/, .mcp.json, skills-lock.json) remain unstaged/untracked — not part of the PAUL build, left for the user or graphify's own process to commit separately.
 
