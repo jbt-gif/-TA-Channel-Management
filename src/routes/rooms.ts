@@ -1,4 +1,5 @@
 import { Router } from "express";
+import * as Sentry from "@sentry/node";
 import { HousekeepingStatus } from "@prisma/client";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth } from "../middleware/auth.js";
@@ -30,6 +31,7 @@ roomsRouter.get("/", requireAuth, async (req, res) => {
     );
   } catch (err) {
     console.error("Rooms list error:", err instanceof Error ? err.message : err);
+    Sentry.captureException(err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -95,6 +97,7 @@ roomsRouter.patch("/:roomId", requireAuth, async (req, res) => {
     });
   } catch (err) {
     console.error("Room status update error:", err instanceof Error ? err.message : err);
+    Sentry.captureException(err);
     res.status(500).json({ error: "Internal server error" });
   }
 });

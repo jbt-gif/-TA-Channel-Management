@@ -1,4 +1,5 @@
 import { Router } from "express";
+import * as Sentry from "@sentry/node";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth } from "../middleware/auth.js";
@@ -258,6 +259,7 @@ bookingsRouter.post("/", requireAuth, async (req, res) => {
       return;
     }
     console.error("Booking creation error:", err instanceof Error ? err.message : err);
+    Sentry.captureException(err);
     res.status(500).json({ error: "Internal server error" });
   }
 });

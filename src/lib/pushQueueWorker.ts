@@ -1,10 +1,30 @@
 import type { PushQueue } from "@prisma/client";
+import * as Sentry from "@sentry/node";
 import { prisma } from "./prisma.js";
 import { ChannexApiError, pushAvailability, pushRestrictions } from "./channex.js";
 
 const MAX_ATTEMPTS = 5;
 const TICK_INTERVAL_MS = 7_000; // 60/7 ≈ 8.6 ticks/min, safely under Channex's 10 req/min/property
 // at one push per hotel per tick.
+
+// De-dupes Sentry captures across both worker catch sites below. At a 7s tick
+// interval, an unmitigated persistent failure would generate ~12,300
+// events/day — enough to exhaust Sentry's free-tier quota in hours and go
+// silent for the rest of the month. Keyed by error message: first occurrence
+// always captured, then at most one re-capture per 15 minutes per distinct
+// message. console.error/lastError writes stay unthrottled at both sites —
+// only the Sentry capture is rate-limited.
+const CAPTURE_DEDUPE_MS = 15 * 60 * 1000;
+const lastCaptured = new Map<string, number>();
+
+function captureWorkerError(err: unknown, message: string): void {
+  const now = Date.now();
+  const last = lastCaptured.get(message);
+  if (last === undefined || now - last >= CAPTURE_DEDUPE_MS) {
+    Sentry.captureException(err);
+    lastCaptured.set(message, now);
+  }
+}
 
 /**
  * Claims at most one PENDING row for a hotel via a single atomic UPDATE — the
@@ -137,6 +157,7 @@ async function processRow(row: PushQueue): Promise<void> {
     // surfacing via lastError, not silently absorbing forever.
     const message =
       err instanceof ChannexApiError ? `[${err.status}] ${err.body}` : err instanceof Error ? err.message : String(err);
+    captureWorkerError(err, message);
     await markFailedOrRetry(row.id, row.attempts, message);
   }
 }
@@ -160,7 +181,9 @@ export async function runPushQueueTick(): Promise<void> {
 export function startPushQueueWorker(): NodeJS.Timeout {
   return setInterval(() => {
     runPushQueueTick().catch((err) => {
-      console.error("PushQueue worker tick error:", err instanceof Error ? err.message : err);
+      const message = err instanceof Error ? err.message : String(err);
+      console.error("PushQueue worker tick error:", message);
+      captureWorkerError(err, message);
     });
   }, TICK_INTERVAL_MS);
 }

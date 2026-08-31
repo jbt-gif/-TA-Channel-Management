@@ -1,4 +1,5 @@
 import { Router } from "express";
+import * as Sentry from "@sentry/node";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth } from "../middleware/auth.js";
@@ -122,6 +123,7 @@ ratePlansRouter.patch("/:ratePlanId", requireAuth, async (req, res) => {
     res.status(200).json(updated);
   } catch (err) {
     console.error("Rate-plan update error:", err instanceof Error ? err.message : err);
+    Sentry.captureException(err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -167,6 +169,7 @@ ratePlansRouter.delete("/:ratePlanId", requireAuth, async (req, res) => {
     res.status(200).json({ id: deleted.id, deletedAt: deleted.deletedAt });
   } catch (err) {
     console.error("Rate-plan delete error:", err instanceof Error ? err.message : err);
+    Sentry.captureException(err);
     res.status(500).json({ error: "Internal server error" });
   }
 });

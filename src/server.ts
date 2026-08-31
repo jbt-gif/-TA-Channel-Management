@@ -1,3 +1,4 @@
+import "./lib/sentry.js";
 import { app } from "./app.js";
 import { startPushQueueWorker } from "./lib/pushQueueWorker.js";
 

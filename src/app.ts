@@ -1,4 +1,6 @@
 import express from "express";
+import * as Sentry from "@sentry/node";
+import { prisma } from "./lib/prisma.js";
 import { authRouter } from "./routes/auth.js";
 import { roomTypesRouter } from "./routes/roomTypes.js";
 import { ratePlansRouter } from "./routes/ratePlans.js";
@@ -27,8 +29,14 @@ app.use("/api/webhooks/channex", channexWebhookRouter);
 app.use(corsMiddleware);
 app.use(express.json());
 
-app.get("/health", (_req, res) => {
-  res.json({ status: "ok" });
+app.get("/health", async (_req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({ status: "ok" });
+  } catch (err) {
+    console.error("Health check DB query failed:", err instanceof Error ? err.message : err);
+    res.status(503).json({ status: "degraded", db: "unreachable" });
+  }
 });
 
 app.use("/api/auth", authRouter);
@@ -44,3 +52,10 @@ app.use("/api/rooms", roomsRouter);
 app.get("/api/me", requireAuth, (req, res) => {
   res.json(req.auth);
 });
+
+// Defense-in-depth only — every route above catches its own errors internally
+// and never calls next(err), so this backstop only ever sees errors that occur
+// outside a route's own try/catch (e.g. body-parsing failures). Route-level
+// Sentry.captureException calls (in each route file) are the primary capture
+// mechanism, not this.
+Sentry.setupExpressErrorHandler(app);

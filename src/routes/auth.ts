@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import { Router } from "express";
+import * as Sentry from "@sentry/node";
 import rateLimit from "express-rate-limit";
 import { prisma } from "../lib/prisma.js";
 import { signToken } from "../lib/auth.js";
@@ -61,6 +62,7 @@ authRouter.post("/login", loginLimiter, async (req, res) => {
     res.status(200).json({ token });
   } catch (err) {
     console.error("Login error:", err instanceof Error ? err.message : err);
+    Sentry.captureException(err);
     res.status(500).json({ error: "Internal server error" });
   }
 });

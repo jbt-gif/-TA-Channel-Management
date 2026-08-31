@@ -1,4 +1,5 @@
 import express, { Router } from "express";
+import * as Sentry from "@sentry/node";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma.js";
 import { pullBookingRevision, verifyWebhookSecret, ChannexApiError, type ChannexBookingRevision } from "../lib/channex.js";
@@ -430,10 +431,12 @@ channexWebhookRouter.post("/", express.json({ limit: "256kb" }), async (req, res
     }
     if (err instanceof ChannexApiError) {
       log({ hotelId, event, revisionId, outcome: "channex-api-error", detail: err.message });
+      Sentry.captureException(err);
       res.status(500).json({ error: "Channex API error" });
       return;
     }
     log({ hotelId, event, revisionId, outcome: "internal-error", detail: err instanceof Error ? err.message : err });
+    Sentry.captureException(err);
     res.status(500).json({ error: "Internal server error" });
   }
 });

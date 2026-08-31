@@ -1,4 +1,5 @@
 import { Router } from "express";
+import * as Sentry from "@sentry/node";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth } from "../middleware/auth.js";
 
@@ -14,6 +15,7 @@ hotelRouter.get("/policy", requireAuth, async (req, res) => {
     res.status(200).json({ downpaymentPercent: hotel.downpaymentPercent });
   } catch (err) {
     console.error("Hotel policy fetch error:", err instanceof Error ? err.message : err);
+    Sentry.captureException(err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -44,6 +46,7 @@ hotelRouter.patch("/policy", requireAuth, async (req, res) => {
     res.status(200).json({ downpaymentPercent: hotel.downpaymentPercent });
   } catch (err) {
     console.error("Hotel policy update error:", err instanceof Error ? err.message : err);
+    Sentry.captureException(err);
     res.status(500).json({ error: "Internal server error" });
   }
 });

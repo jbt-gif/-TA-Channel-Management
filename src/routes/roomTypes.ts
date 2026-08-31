@@ -1,4 +1,5 @@
 import { Router } from "express";
+import * as Sentry from "@sentry/node";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth } from "../middleware/auth.js";
@@ -61,6 +62,7 @@ roomTypesRouter.get("/", requireAuth, async (req, res) => {
     );
   } catch (err) {
     console.error("Room-types list error:", err instanceof Error ? err.message : err);
+    Sentry.captureException(err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -169,6 +171,7 @@ roomTypesRouter.get("/:roomTypeId/calendar", requireAuth, async (req, res) => {
     });
   } catch (err) {
     console.error("Calendar grid error:", err instanceof Error ? err.message : err);
+    Sentry.captureException(err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -195,6 +198,7 @@ roomTypesRouter.post("/", requireAuth, async (req, res) => {
     res.status(201).json(roomType);
   } catch (err) {
     console.error("Room-type create error:", err instanceof Error ? err.message : err);
+    Sentry.captureException(err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -245,6 +249,7 @@ roomTypesRouter.patch("/:roomTypeId", requireAuth, async (req, res) => {
     res.status(200).json(updated);
   } catch (err) {
     console.error("Room-type update error:", err instanceof Error ? err.message : err);
+    Sentry.captureException(err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -291,6 +296,7 @@ roomTypesRouter.delete("/:roomTypeId", requireAuth, async (req, res) => {
     res.status(200).json({ id: deleted.id, deletedAt: deleted.deletedAt });
   } catch (err) {
     console.error("Room-type delete error:", err instanceof Error ? err.message : err);
+    Sentry.captureException(err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -344,6 +350,7 @@ roomTypesRouter.post("/:roomTypeId/rate-plans", requireAuth, async (req, res) =>
     res.status(201).json(ratePlan);
   } catch (err) {
     console.error("Rate-plan create error:", err instanceof Error ? err.message : err);
+    Sentry.captureException(err);
     res.status(500).json({ error: "Internal server error" });
   }
 });

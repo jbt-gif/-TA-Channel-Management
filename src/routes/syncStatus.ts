@@ -1,4 +1,5 @@
 import { Router } from "express";
+import * as Sentry from "@sentry/node";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth } from "../middleware/auth.js";
 
@@ -67,6 +68,7 @@ syncStatusRouter.get("/", requireAuth, async (req, res) => {
     res.status(200).json({ counts, failed });
   } catch (err) {
     console.error("Sync-status fetch error:", err instanceof Error ? err.message : err);
+    Sentry.captureException(err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -112,6 +114,7 @@ syncStatusRouter.post("/:id/retry", requireAuth, async (req, res) => {
     res.status(200).json(updated);
   } catch (err) {
     console.error("Sync-status retry error:", err instanceof Error ? err.message : err);
+    Sentry.captureException(err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
