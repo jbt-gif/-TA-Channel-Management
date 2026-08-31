@@ -132,10 +132,10 @@ Greenfield build, no existing codebase. Founder is a non-technical "vibe coder" 
 | Metric | Target | Current | Status |
 |--------|--------|---------|--------|
 | Overbooking incidents | Zero | - | Not started |
-| Silent failures (payment/webhook/sync) | Zero — every failure visibly logged and alerted | - | Not started |
-| Error + uptime monitoring live before first real hotel | Wired in before go-live | - | Not started |
+| Silent failures (payment/webhook/sync) | Zero — every failure visibly logged and alerted | Sentry wired into every route's real catch-and-500 path + both PushQueue worker catch sites, live-verified 2026-08-31 | Live |
+| Error + uptime monitoring live before first real hotel | Wired in before go-live | Sentry (backend+frontend) + UptimeRobot (both staging URLs) live-verified against real captured events and a real delivered test alert, 2026-08-31 | Live |
 | Backup restore tested | At least once, verified | - | Not started |
-| Staging environment separate from production | In place before any real hotel's data enters the system | - | Not started |
+| Staging environment separate from production | In place before any real hotel's data enters the system | Real Render+Vercel staging live since 07-01 (2026-08-31), separate production Supabase project schema-complete | Live |
 | Security review completed | Before first paying client | - | Not started |
 | Core booking flows verified end-to-end | Walk-in booking, OTA webhook booking, rate/availability push+pull, GCash/QRPh/card downpayment + hold + release, booking modification/cancellation, housekeeping status updates | - | Not started |
 | Scenario test bank coverage | Documented test scenarios for overbooking concurrency, webhook idempotency, payment/hold timing, timezone boundaries, multi-tenant isolation | - | Not started |

@@ -22,7 +22,7 @@ Phases: 5 of 6 complete (Phase 5 resequenced out of v0.1's immediate order 2026-
 | 4 | Channex integration | 5/5 | ✅ Complete | 2026-08-24 |
 | 5 | PayMongo payments | TBD | Resequenced — moved out of v0.1's immediate order, to be planned after v0.3 is finished | - |
 | 6 | Mobile housekeeping view | 1/1 | ✅ Complete | 2026-08-28 |
-| 7 | Pre-launch gate | 1/4 est. | In progress — 07-01 (staging/prod deployment) ✅ Complete, 07-02 (monitoring) not yet planned | - |
+| 7 | Pre-launch gate | 2/4 est. | In progress — 07-01 ✅ Complete, 07-02 (monitoring) ✅ Complete, 07-03 (backup restore drill) not yet planned | - |
 
 ## Phase Details
 
@@ -153,7 +153,9 @@ Phases: 5 of 6 complete (Phase 5 resequenced out of v0.1's immediate order 2026-
 - Real security review pass
 - Single goal-backward audit (`gsd-verifier`) against PROJECT.md Core Value + Success Metrics
 
-**Progress — 07-01 (staging environment separate from production) ✅ Complete 2026-08-31.** Real staging (Render + Vercel, live cross-origin, CORS-enforced) and a separate, schema-complete production Supabase project both stood up; full core loop live-verified. See `.paul/phases/07-pre-launch-gate/07-01-SUMMARY.md`. Remaining scope items (monitoring, backup-restore drill, security review + goal-backward audit) not yet planned — likely 07-02/07-03/07-04 per the split logged 2026-08-28.
+**Progress — 07-01 (staging environment separate from production) ✅ Complete 2026-08-31.** Real staging (Render + Vercel, live cross-origin, CORS-enforced) and a separate, schema-complete production Supabase project both stood up; full core loop live-verified. See `.paul/phases/07-pre-launch-gate/07-01-SUMMARY.md`.
+
+**Progress — 07-02 (error + uptime monitoring) ✅ Complete 2026-08-31.** Sentry (backend + frontend) and UptimeRobot both live against the real staging URLs, proven with actual captured events and a real delivered test alert — not just configured. AC-8 (no guest PII/JWT leakage to Sentry) confirmed with direct evidence on both sides. security-review on the auth.ts/channexWebhook.ts diff clean. See `.paul/phases/07-pre-launch-gate/07-02-SUMMARY.md`. Remaining scope items (backup-restore drill, security review + goal-backward audit) not yet planned — 07-03/07-04 per the split logged 2026-08-28.
 
 ---
 
