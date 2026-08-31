@@ -22,7 +22,7 @@ Phases: 5 of 6 complete (Phase 5 resequenced out of v0.1's immediate order 2026-
 | 4 | Channex integration | 5/5 | ✅ Complete | 2026-08-24 |
 | 5 | PayMongo payments | TBD | Resequenced — moved out of v0.1's immediate order, to be planned after v0.3 is finished | - |
 | 6 | Mobile housekeeping view | 1/1 | ✅ Complete | 2026-08-28 |
-| 7 | Pre-launch gate | TBD | Not started | - |
+| 7 | Pre-launch gate | 1/4 est. | In progress — 07-01 (staging/prod deployment) ✅ Complete, 07-02 (monitoring) not yet planned | - |
 
 ## Phase Details
 
@@ -153,6 +153,8 @@ Phases: 5 of 6 complete (Phase 5 resequenced out of v0.1's immediate order 2026-
 - Real security review pass
 - Single goal-backward audit (`gsd-verifier`) against PROJECT.md Core Value + Success Metrics
 
+**Progress — 07-01 (staging environment separate from production) ✅ Complete 2026-08-31.** Real staging (Render + Vercel, live cross-origin, CORS-enforced) and a separate, schema-complete production Supabase project both stood up; full core loop live-verified. See `.paul/phases/07-pre-launch-gate/07-01-SUMMARY.md`. Remaining scope items (monitoring, backup-restore drill, security review + goal-backward audit) not yet planned — likely 07-02/07-03/07-04 per the split logged 2026-08-28.
+
 ---
 
 ## Future Milestones (added 2026-08-18, post agency-model pivot)
@@ -197,7 +199,7 @@ Not yet phase-planned in detail — recorded here so the direction isn't lost, t
 - *Retention/differentiation:* repeat-guest recognition — guest who stayed at one network hotel gets recognized and offered a direct-booking perk on return, at that hotel or elsewhere in the network. Mainly benefits the hotel owner (saves them the OTA cut on repeat guests); benefits the agency indirectly via stickier clients + a genuine "we build loyalty, not just list rooms" pitch
 - *Local relevance:* Viber/WhatsApp/SMS guest messaging (PH guests don't live in email); multi-language direct-booking site (Korean/Chinese toggle, PH's largest inbound tourism segments)
 - *Growth lever:* referral discount — hotel owner refers another hotel, gets a fee break. Small-hotel owners in the same town/association know each other; word-of-mouth is how this segment actually buys
-- *Sharpest long-term moat:* rate intelligence — showing an owner what nearby competing hotels charge, with pricing suggestions. Big chains have this; small PH hotels never do. Hard for a competitor to copy without the underlying data pipeline built up over time
+- *Sharpest long-term moat:* rate intelligence — showing an owner what nearby competing hotels charge, with pricing suggestions. Big chains have this; small PH hotels never do. Hard for a competitor to copy without the underlying data pipeline built up over time. **Refined 2026-08-31 (founder-named "Competitor Radar," lives on the agency's own command-center dashboard, not per-hotel):** collects live/periodic pricing of nearby comparable hotels per client property, feeding both the manual "sanity-check the markup against nearby listings" step and (later) automated pricing suggestions. Confirmed no public evidence Cocotel offers this — genuine differentiator, matches the established "rate shopping" product category (OTA Insight, RateGain, Duetto sell this to larger chains; nothing brings it to small independent PH hotels today). **Real open question to resolve at planning time, not now:** how the data actually gets collected — most OTAs' Terms of Service technically prohibit automated scraping of listing pages, so the build needs a deliberate choice between careful/accepted-risk scraping (industry-common), a licensed rate-shopping data API (adds recurring cost, cuts against bootstrapped/cost-conscious constraint), or a manual/semi-automated MVP while the hotel network is still small.
 
 ### v0.4: Offline Resilience & Circuit Breaker
 
@@ -214,6 +216,16 @@ Not yet phase-planned in detail — recorded here so the direction isn't lost, t
 **Working assumption (must hold or design needs revisiting):** one hotel = one active booking point (single front desk / single phone line) at a time. This is why step 4 doesn't need a same-hotel booking-conflict resolution step — two independent local writers colliding on the same room isn't possible under this assumption. If a hotel later runs two simultaneous front-desk terminals, this assumption breaks and reconciliation needs a conflict-resolution UI added.
 
 **Explicitly out of scope / not needed:** a total local-internet outage at the hotel (ISP down, not just a hotel-dashboard-to-master hiccup) blocks everything at that location regardless of software — no app fixes zero connectivity. That scenario's answer is a manual paper-booking fallback SOP, not engineering.
+
+## Design Direction Notes (captured 2026-08-31, not yet actioned)
+
+Founder is still deferring a dedicated design pass ("designing is for later," confirmed 2026-08-18 during Phase 2 and reconfirmed here) — this is spontaneous direction-setting to build from later, not a request to start now.
+
+**Style target:** "modern minimal SaaS" — clean neutral/white background, one accent color, soft rounded cards instead of harsh grid lines, generous whitespace, muted status colors (not the harsh saturated red/green blocks seen in a competitor's live PMS screenshot referenced this session). Closer to Airbnb's host calendar or Google Calendar's week view than a dense power-user scheduling tool (Notion Calendar/Linear) — the target user is a non-technical front-desk/housekeeping staffer per PROJECT.md's Target Users section, not a power user, so legibility-at-a-glance beats information density.
+
+**Calendar/stay-view grid named explicitly as the most important screen to get right** — existing room-type-rows × date-columns structure (built in Phase 2's 02-05) is the right shape; this is about visual polish on top of it at the eventual design pass, not a structural redesign.
+
+Apply this direction whenever a dedicated UI/design phase is actually planned (`ui-ux-pro-max` or `design-taste-frontend` skills, or a `gsd-ui-phase`-style pass) — not before.
 
 ---
 *Roadmap created: 2026-08-15*
